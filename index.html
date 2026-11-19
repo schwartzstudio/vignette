@@ -1387,6 +1387,7 @@ function initGL(){
   return true;
 }
 function upload(src){
+  st.texW = src.videoWidth || src.width; st.texH = src.videoHeight || src.height;
   gl.bindTexture(gl.TEXTURE_2D, tex);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
   gl.generateMipmap(gl.TEXTURE_2D);
@@ -1395,7 +1396,7 @@ function upload(src){
 const DESKTOP = matchMedia('(pointer: fine)').matches && !/Android|iPhone|iPad/i.test(navigator.userAgent);
 function srcFocal(){ if(st.srcKind==='video') return DESKTOP ? 46 : (st.facing==='user' ? 30 : 26); if(st.srcKind==='image' && st.srcLabel==='Photo') return 26; return 50; }
 function srcSize(){
-  if(st.srcKind==='video') return [st.video.videoWidth||1280, st.video.videoHeight||720];
+  if(st.srcKind==='video') return [st.texW||st.video.videoWidth||1280, st.texH||st.video.videoHeight||720];
   if(st.img) return [st.img.width, st.img.height];
   return [1,1];
 }
@@ -2091,7 +2092,7 @@ async function startCamera(facing){
   stopCamera();
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('no-media');
   audioStale=true;
-  const stream = await navigator.mediaDevices.getUserMedia({audio:false, video:{facingMode:{ideal:facing}, width:{ideal:1920}, height:{ideal:1080}}});
+  const stream = await navigator.mediaDevices.getUserMedia({audio:false, video:{facingMode:{ideal:facing}, width:{ideal:3840}, height:{ideal:2160}}});
   const v = st.video || document.createElement('video');
   v.playsInline = true; v.muted = true; v.setAttribute('playsinline',''); v.srcObject = stream;
   await v.play();
@@ -2261,13 +2262,15 @@ async function fire(opt={}){
   if(st.srcKind==='video') upload(st.video);
   const [sw, sh] = srcSize();
   const A = cssW/cssH;
-  let long = Math.min(2048, Math.max(sw, sh));
-  const w = A>=1 ? long : Math.round(long*A), h = A>=1 ? Math.round(long/A) : long;
+  // full camera resolution, cropped to the finder's shape (capped so memory stays sane)
+  let w, h; if(sw/sh > A){ h = sh; w = Math.round(sh*A); } else { w = sw; h = Math.round(sw/A); }
+  const kk = Math.min(1, 4096/Math.max(w, h)); w = Math.round(w*kk); h = Math.round(h*kk);
   const pw=canvas.width, ph=canvas.height;
   canvas.width=w; canvas.height=h;
   draw(w, h, {expo:m.expo, seed:(Math.random()*1e9)|0, finder:false, N, bypass:false});
   const url = canvas.toDataURL('image/jpeg', 0.92);
   canvas.width=pw; canvas.height=ph;
+  if(st.srcKind==='video') upload(previewSrc());
   const s = st.stock;
   const geo = st.geo && Date.now()-st.geo.t < 15*60e3 ? Object.assign({}, st.geo) : null;
   const shot = {url, lens: st.lens.f+'mm', lensName: st.lens.name, stock:s, n: st.roll.length - st.rollStart + 1, f:N, t:m.t, expo:m.expo, portrait: A<1,
@@ -2495,12 +2498,22 @@ function glowFocus(){
   x.drawImage(canvas, canvas.width - sw, 0, sw, canvas.height, 0, 0, c.width, c.height);
   x.restore();
 }
+/* ========================================================= preview feed */
+// the camera runs at 4K for the shutter; the live finder only needs about 1440px
+const pcv = document.createElement('canvas'), pctx = pcv.getContext('2d');
+function previewSrc(){
+  const v = st.video, vw = v.videoWidth, vh = v.videoHeight, L = Math.max(vw, vh);
+  if(!L || L <= 1600) return v;
+  const k = 1440/L, w = Math.round(vw*k), h = Math.round(vh*k);
+  if(pcv.width!==w || pcv.height!==h){ pcv.width=w; pcv.height=h; }
+  pctx.drawImage(v, 0, 0, w, h); return pcv;
+}
 /* ========================================================= loop */
 let lastT = performance.now(), frameSeed = 1;
 function loop(now){
   const dt = Math.min(0.05, (now-lastT)/1000); lastT = now;
   if(st.source){
-    if(st.srcKind==='video' && st.video.readyState >= 2) upload(st.video);
+    if(st.srcKind==='video' && st.video.readyState >= 2) upload(previewSrc());
     sampleMeter(now);
     const m = computeExposure(); st.metered = m;
     if(!st.busy){
