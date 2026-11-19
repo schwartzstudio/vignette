@@ -1526,7 +1526,8 @@ function buildMeter(H){
   needleEl = meterSvg.querySelector('#needle'); needleHalo = meterSvg.querySelector('#needleHalo'); greenEl = meterSvg.querySelector('#gNeedle'); gLine = meterSvg.querySelector('#gLine'); gTab = meterSvg.querySelector('#gTab');
   if(st.gNeedle == null) st.gNeedle = greenTarget();
 }
-function meterActive(){ return st.half || performance.now() < st.meterUntil; }
+// always on: no half press or battery timeout needed in the app
+function meterActive(){ return true; }
 function wake(ms=16000){ st.meterUntil = performance.now()+ms; }
 function needleTarget(m){
   // at rest (meter off, or M250 / B) the black needle drops into the lower red zone
