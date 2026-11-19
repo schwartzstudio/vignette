@@ -2281,7 +2281,7 @@ async function fire(opt={}){
   const geo = st.geo && Date.now()-st.geo.t < 15*60e3 ? Object.assign({}, st.geo) : null;
   const shot = {url, lens: st.lens.f+'mm', lensName: st.lens.name, stock:s, n: st.roll.length - st.rollStart + 1, f:N, t:m.t, expo:m.expo, portrait: A<1,
     id: nextShotId(), time: Date.now(), geo, iso: st.isoSet};
-  st.roll.push(shot);
+  st.roll.push(shot); saveShot(shot);
   const hold = opt.bulb ? 60 : Math.max(90, Math.min(m.t*1000, 1600));
   setTimeout(()=>{ bo.classList.remove('on'); }, hold);
   setTimeout(()=>{
@@ -2317,11 +2317,43 @@ function autoFocusAt(cx, cy){
   afAnim=requestAnimationFrame(step);
 }
 
+/* ========================================================= saved frames
+   Frames are kept on this device in IndexedDB so they're still in the roll after the app is closed. */
+const shotDB = (()=>{
+  let p=null;
+  const open = ()=> p || (p = new Promise((res, rej)=>{
+    const r = indexedDB.open('vignette', 1);
+    r.onupgradeneeded = ()=> r.result.createObjectStore('shots', {keyPath:'id'});
+    r.onsuccess = ()=> res(r.result); r.onerror = ()=> rej(r.error);
+  }));
+  const run = async (mode, fn)=>{ const db = await open(); return new Promise((res, rej)=>{
+    const tx = db.transaction('shots', mode), req = fn(tx.objectStore('shots'));
+    tx.oncomplete = ()=> res(req && req.result); tx.onerror = ()=> rej(tx.error); tx.onabort = ()=> rej(tx.error); }); };
+  return { put: s=>run('readwrite', o=>o.put(s)), del: id=>run('readwrite', o=>o.delete(id)), all: ()=>run('readonly', o=>o.getAll()) };
+})();
+const findStock = id=> id==='none' ? NOFILM : (STOCKS.find(x=>x.id===id) || STOCKS[1]);
+function saveShot(r){
+  const {bUrl, stock, ...rest} = r;
+  shotDB.put(Object.assign(rest, {stockId: stock.id})).catch(()=>toast('Could not keep this frame on the device. Save it to Photos.', 3000));
+}
+async function restoreRoll(){
+  try{
+    try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
+    const saved = (await shotDB.all()).sort((a,b)=>a.time-b.time);
+    if(!saved.length) return;
+    const have = new Set(st.roll.map(r=>r.id));
+    const old = saved.filter(r=>!have.has(r.id)).map(({stockId, ...r})=>Object.assign(r, {stock: findStock(stockId)}));
+    st.roll = old.concat(st.roll); st.rollStart += old.length;   // earlier frames, a fresh roll in the camera
+    const last = st.roll[st.roll.length-1]; if(last) $('rollBtn').style.backgroundImage = `url(${last.url})`;
+    syncUI(); renderRoll();
+  }catch(e){ console.warn('restore', e); }
+}
+
 /* ========================================================= roll + lightbox */
 function renderRoll(){
   const g=$('rollGrid');
   $('rollTitle').textContent = `${st.roll.length} ${st.roll.length===1?'frame':'frames'}`;
-  if(!st.roll.length){ g.innerHTML = `<div class="empty">No frames yet.<br>Hold the shutter to meter, release to fire.</div>`; return; }
+  if(!st.roll.length){ g.innerHTML = `<div class="empty">No frames yet.<br>Press the shutter to take one.</div>`; return; }
   g.innerHTML = st.roll.map((r,i)=>`<div class="frame ${r.stock.type==='bw'?'bw':''} ${r.portrait?'p':''}" data-i="${i}"><img src="${r.url}" alt=""><div class="edge">${r.stock.none?'DIGITAL':r.stock.maker.toUpperCase()+' '+r.stock.name.toUpperCase()}</div></div>`).join('');
   g.querySelectorAll('.frame').forEach(f=>f.onclick=()=>openShot(+f.dataset.i));
 }
@@ -2421,7 +2453,7 @@ $('lbDel').onclick = e=>{ e.stopPropagation(); const c=$('lbConfirm'), r=$('lbDe
 document.addEventListener('pointerdown', e=>{ const c=$('lbConfirm'); if(c.classList.contains('on') && !e.target.closest('#lbConfirm, #lbDel')) c.classList.remove('on'); }, true);
 $('lbConfirmDel').onclick = ()=>{ $('lbConfirm').classList.remove('on'); const b=$('lbDel');
   const i=lbIdx;
-  st.roll.splice(i,1); if(i<st.rollStart) st.rollStart--;
+  const gone=st.roll[i]; st.roll.splice(i,1); if(i<st.rollStart) st.rollStart--; if(gone) shotDB.del(gone.id).catch(()=>{});
   const last=st.roll[st.roll.length-1]; $('rollBtn').style.backgroundImage = last ? `url(${last.url})` : '';
   syncUI(); renderRoll(); haptic(12);
   if(!st.roll.length){ closeShot(); return; }
@@ -2586,6 +2618,7 @@ $('obGrant').onclick = async ()=>{
   hideIntro(); b.disabled=false;
 };
 permState('geolocation').then(s=>{ if(s==='granted') watchGeo(); });
+restoreRoll();
 // after the first run, skip the welcome and go straight to the camera; fall back to the welcome if it can't start
 (async ()=>{
   let seen=false; try{ seen = localStorage.getItem('vignette.onboarded')==='1'; }catch(e){}
