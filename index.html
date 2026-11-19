@@ -2093,6 +2093,12 @@ async function startCamera(facing){
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('no-media');
   audioStale=true;
   const stream = await navigator.mediaDevices.getUserMedia({audio:false, video:{facingMode:{ideal:facing}, width:{ideal:3840}, height:{ideal:2160}}});
+  // then step up to the largest frame this device's camera offers
+  try{
+    const tr = stream.getVideoTracks()[0], caps = tr.getCapabilities ? tr.getCapabilities() : null;
+    if(caps && caps.width && caps.height && caps.width.max && caps.height.max)
+      await tr.applyConstraints({width:{ideal:caps.width.max}, height:{ideal:caps.height.max}});
+  }catch(e){}
   const v = st.video || document.createElement('video');
   v.playsInline = true; v.muted = true; v.setAttribute('playsinline',''); v.srcObject = stream;
   await v.play();
@@ -2129,7 +2135,7 @@ async function chooseSource(){
   try{ await startCamera('environment'); } catch(e){ camFail(e); }
   hideIntro();
 }
-function hideIntro(){ $('intro').classList.add('off'); wake(); fitViewport(); setTimeout(fitViewport, 300); }
+function hideIntro(){ try{ localStorage.setItem('vignette.onboarded','1'); }catch(e){} $('intro').classList.add('off'); wake(); fitViewport(); setTimeout(fitViewport, 300); }
 
 /* procedural test scene: sky, sun, ColorChecker, step wedge, plants, red ball */
 // Big Sur, Bixby Bridge. Photo by George Cox on Unsplash (Unsplash License)
@@ -2262,9 +2268,9 @@ async function fire(opt={}){
   if(st.srcKind==='video') upload(st.video);
   const [sw, sh] = srcSize();
   const A = cssW/cssH;
-  // full camera resolution, cropped to the finder's shape (capped so memory stays sane)
+  // full camera resolution, cropped to the finder's shape (capped by what the GPU can render)
   let w, h; if(sw/sh > A){ h = sh; w = Math.round(sh*A); } else { w = sw; h = Math.round(sw/A); }
-  const kk = Math.min(1, 4096/Math.max(w, h)); w = Math.round(w*kk); h = Math.round(h*kk);
+  const kk = Math.min(1, Math.min(8192, gl.getParameter(gl.MAX_RENDERBUFFER_SIZE), gl.getParameter(gl.MAX_TEXTURE_SIZE))/Math.max(w, h)); w = Math.round(w*kk); h = Math.round(h*kk);
   const pw=canvas.width, ph=canvas.height;
   canvas.width=w; canvas.height=h;
   draw(w, h, {expo:m.expo, seed:(Math.random()*1e9)|0, finder:false, N, bypass:false});
@@ -2580,6 +2586,14 @@ $('obGrant').onclick = async ()=>{
   hideIntro(); b.disabled=false;
 };
 permState('geolocation').then(s=>{ if(s==='granted') watchGeo(); });
+// after the first run, skip the welcome and go straight to the camera; fall back to the welcome if it can't start
+(async ()=>{
+  let seen=false; try{ seen = localStorage.getItem('vignette.onboarded')==='1'; }catch(e){}
+  if(!seen || !(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) return;
+  $('intro').classList.add('off');
+  try{ await startCamera('environment'); hideIntro(); }
+  catch(e){ $('intro').classList.remove('off'); }
+})();
 
 
 // welcome cards: the test scene developed on three stocks, printed with film rebate
