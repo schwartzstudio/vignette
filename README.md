@@ -30,6 +30,7 @@ npx serve .
 
 - `index.html`: the whole app
 - `manifest.webmanifest`: home screen / install settings
+- `sample.jpg`: the sample scene shown on the welcome screen and when no camera is available
 - `apple-touch-icon.png`, `favicon-32.png`, `icon/`: app icons, including the 1024px source
 
 ## License
