@@ -342,12 +342,13 @@ body.panel-open .status .ic-open{display:none} body.panel-open .status .ic-close
 .rollgrid{display:flex;gap:0;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;background:#0a0806;margin:0 -12px;padding:0 12px;scrollbar-width:none}
 .rollgrid::-webkit-scrollbar{display:none}
 .rollgrid .empty{flex:1;background:var(--panel);margin:0 -12px}
-.rollgrid .frame{flex:none;height:min(46dvh,300px);padding:18px 5px 26px;border-radius:0;scroll-snap-align:center;box-sizing:border-box}
-.rollgrid .frame img{height:100%;width:auto;aspect-ratio:3/2}
-.rollgrid .frame.p img{aspect-ratio:2/3}
-.rollgrid .frame::before,.rollgrid .frame::after{left:0;right:0;height:7px;background:repeating-linear-gradient(90deg,transparent 0 4px,#2a221a 4px 10px,transparent 10px 12px)}
-.rollgrid .frame::before{top:5px}.rollgrid .frame::after{bottom:5px}
-.rollgrid .frame .edge{bottom:13px}
+.rollgrid .frame{flex:none;height:min(46dvh,300px);aspect-ratio:38/35;padding:0;border-radius:0;background:none;scroll-snap-align:center;box-sizing:border-box}
+.rollgrid .frame.p{aspect-ratio:18/35}
+.rollgrid .frame::before,.rollgrid .frame::after{display:none}
+.rollgrid .frame .edge{position:absolute;inset:0;width:100%;height:100%;display:block}
+/* image area: 36 x 24mm (16 x 24 for portrait) inside the 38 x 35mm frame */
+.rollgrid .frame img{position:absolute;top:calc(5.5/35*100%);height:calc(24/35*100%);left:calc(1/38*100%);width:calc(36/38*100%);aspect-ratio:auto;border-radius:0}
+.rollgrid .frame.p img{left:calc(1/18*100%);width:calc(16/18*100%)}
 .frame{background:#0a0806;padding:12px 6px 22px;border-radius:2px;position:relative;cursor:pointer}
 .frame img{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:2px}
 .frame.p img{aspect-ratio:2/3}
@@ -946,7 +947,7 @@ body.panel-open .panel.settle{transition:height .34s var(--ease-out)!important}
 .panel::-webkit-scrollbar,.panel .pbody::-webkit-scrollbar{display:none}
 /* ===== polish */
 /* roll strip: a landscape frame at full strip height is wider than a phone, so cap the height to what fits across */
-.rollgrid .frame{height:min(46dvh,300px,calc((100vw - 50px)/1.5 + 44px))!important}
+.rollgrid .frame{height:min(46dvh,300px,calc((100vw - 50px)*35/38))!important}
 /* no orphaned serial numbers or single words on wrapped lines */
 .lensrow span,.film .d,.lb-confirm p,.ob .lede,.scrnote,.perms span{text-wrap:pretty}
 /* hover feedback where there is a mouse */
@@ -1923,8 +1924,22 @@ function canSVG(s){
 const EDGE = {neg:{bg:'#1b1d17',ink:'#f2a23a',hole:'#040404'}, slide:{bg:'#0b0b0b',ink:'#e4d9b4',hole:'#020202'},
               bw:{bg:'#151515',ink:'#d9d6cf',hole:'#030303'}, none:{bg:'#121212',ink:'#9b9992',hole:'#030303'}};
 function hashStr(str){ let h=2166136261; for(const c of String(str)){ h^=c.charCodeAt(0); h=Math.imul(h,16777619); } return h>>>0; }
+/* 35mm edge layout, in mm (ISO 1007 perforations): 35mm film, 24mm image, 5.5mm rebates,
+   1.98 x 2.79mm perforations on a 4.75mm pitch, 2.01mm in from the edge. Text sits outside the
+   perforations: frame number + KODAK PORTRA 400 on top; number, DX bars and "7A →" on the bottom. */
+const PERF={w:1.98, h:2.79, pitch:4.75, edge:2.01, r:.5}, REBATE=5.5;
+function edgeName(s){ return s.none ? ['FE2 ','DIGITAL'] : [s.maker.toUpperCase()+' ', s.name.toUpperCase()]; }
+function edgeItems(s, n, extra){
+  const fr=String(n), code=hashStr(s.id||'none');
+  return {
+    top:[{at:1.2,t:fr,w:600},{at:7,runs:[[edgeName(s)[0],600],[edgeName(s)[1],400]],max:17.5},
+         ...(extra?[{at:26,t:extra,w:400,fs:1.35,max:9.5}]:[])],
+    bot:[{at:1.2,t:fr,w:600},{at:4.6,bars:code},{at:16.4,t:fr+'A',w:500,fs:1.3,arrow:true},{at:21.6,bars:code>>>7}]
+  };
+}
+const EDGE_FONT=(w,fs)=>`${w} ${fs}px Inter, "Helvetica Neue", Arial, sans-serif`;
 function filmFrame(src, s, n, extra){
-  const W=src.width, H=src.height, port=H>W, u=Math.min(W,H)/24, R=Math.round(3.5*u);
+  const W=src.width, H=src.height, port=H>W, u=Math.min(W,H)/24, R=Math.round(REBATE*u);
   const c=document.createElement('canvas'); c.width=port?W+2*R:W; c.height=port?H:H+2*R;
   const x=c.getContext('2d'), col=EDGE[s.none?'none':s.type]||EDGE.neg;
   x.fillStyle=col.bg; x.fillRect(0,0,c.width,c.height);
@@ -1934,39 +1949,57 @@ function filmFrame(src, s, n, extra){
   x.fillStyle=gr; x.fillRect(0,0,c.width,c.height);
   x.drawImage(src, port?R:0, port?0:R);
   x.strokeStyle='rgba(0,0,0,.55)'; x.lineWidth=Math.max(1,u*.18); x.strokeRect(port?R:0, port?0:R, W, H);
-  const fr=String(n).padStart(2,'0'), name=(s.none?'FE2 DIGITAL':`${s.maker} ${s.name}`).toUpperCase(), code=hashStr(s.id||'none');
-  const strip=(len, flip, items)=>{
-    const band=[flip?.54*R:.06*R, flip?.94*R:.46*R], hc=flip?.27*R:.73*R, ht=.32*R, hl=2*u, pitch=4.75*u;
+  const E=edgeItems(s, n, extra);
+  // one rebate strip; y runs across the rebate, outer film edge at 0 (top band) or R (bottom band)
+  const strip=(len, bottom, items)=>{
+    const out=(d,h=0)=> bottom ? R-d-h : d;          // top of a box h tall whose outer side is d from the film edge
     x.fillStyle=col.hole;
-    for(let p=1.3*u; p<len-hl; p+=pitch){ x.beginPath(); x.roundRect ? x.roundRect(p, hc-ht/2, hl, ht, .4*u) : x.rect(p, hc-ht/2, hl, ht); x.fill(); }
-    x.fillStyle=col.ink; x.textBaseline='middle';
-    const mid=(band[0]+band[1])/2, bh=band[1]-band[0];
+    for(let p=(PERF.pitch-PERF.w)/2*u; p<len-PERF.w*u; p+=PERF.pitch*u){
+      const y=out(PERF.edge*u, PERF.h*u); x.beginPath();
+      x.roundRect ? x.roundRect(p, y, PERF.w*u, PERF.h*u, PERF.r*u) : x.rect(p, y, PERF.w*u, PERF.h*u); x.fill(); }
+    x.fillStyle=col.ink; x.textBaseline='alphabetic';
     items.forEach(it=>{
-      const at=it.at*len;
-      if(it.bars){ // DX style code: guard bars, then a pattern from the stock
-        let px=at; const bits=it.bars;
-        for(let k=0;k<14;k++){ const tall = k<2 || k===13 || ((bits>>k)&1); const h=tall?bh*.92:bh*.48;
-          x.fillRect(px, flip?band[0]:band[1]-h, .3*u, h); px += .62*u; }
-        return;
-      }
-      let fs=1.12*u; x.font=`600 ${fs}px "Barlow Condensed", "Arial Narrow", sans-serif`;
-      const maxW=(it.max||1)*len; let w=x.measureText(it.t).width;
-      if(w>maxW){ fs*=maxW/w; x.font=`600 ${fs}px "Barlow Condensed", "Arial Narrow", sans-serif`; }
-      x.fillText(it.t, at, mid+fs*.04);
+      const at=it.at*u;
+      if(it.bars){ let px=at; for(let k=0;k<16;k++){ const tall=k<2||k===15||((it.bars>>k)&1), h=(tall?1.5:.75)*u;
+          x.fillRect(px, out(.3*u,h), .32*u, h); px+=.62*u; } return; }
+      let fs=(it.fs||1.75)*u; const runs=it.runs||[[it.t,it.w||600]];
+      const width=()=>runs.reduce((a,[t,w])=>{ x.font=EDGE_FONT(w,fs); return a+x.measureText(t).width; },0);
+      let tw=width(); const maxW=(it.max||36)*u; if(tw>maxW){ fs*=maxW/tw; tw=maxW; }
+      // top band: caps toward the edge; bottom band: baseline toward the edge (both read upright on the strip)
+      const base = bottom ? R-(it.arrow?1.05:.42)*u : 1.72*u;
+      let px=at; runs.forEach(([t,w])=>{ x.font=EDGE_FONT(w,fs); x.fillText(t, px, base); px+=x.measureText(t).width; });
+      if(it.arrow){ const y=R-.48*u, h=.28*u; x.fillRect(at, y-.05*u, tw, .1*u);
+        x.beginPath(); x.moveTo(at+tw+.35*u, y); x.lineTo(at+tw-.1*u, y-h); x.lineTo(at+tw-.1*u, y+h); x.closePath(); x.fill(); }
     });
   };
-  const A=[{at:.03,t:'▸'+fr},{at:.15,bars:code},{at:.4,t:name,max:.56}];
-  const B=[{at:.03,t:fr+'A'},{at:.17,t:extra||'FE2'},{at:.6,bars:code>>>7},{at:.9,t:'▸'+String(n+1).padStart(2,'0')}];
-  x.save();
-  if(port){
-    x.save(); x.translate(0,H); x.rotate(-Math.PI/2); strip(H,false,A); x.restore();
-    x.save(); x.translate(c.width,0); x.rotate(Math.PI/2); strip(H,false,B); x.restore();
+  if(port){ // strips run up the long sides
+    x.save(); x.translate(0,H); x.rotate(-Math.PI/2); strip(H,false,E.top); x.restore();
+    x.save(); x.translate(c.width-R,H); x.rotate(-Math.PI/2); strip(H,true,E.bot); x.restore();
   } else {
-    strip(W,false,A);
-    x.save(); x.translate(0,H+R); strip(W,true,B); x.restore();
+    strip(W,false,E.top);
+    x.save(); x.translate(0,H+R); strip(W,true,E.bot); x.restore();
   }
-  x.restore();
   return c;
+}
+/* the same edge as an SVG for the roll sheet: one frame box is 38 x 35mm (36mm image + 1mm each side),
+   x0 = mm of strip before this frame so the perforations run on continuously */
+function edgeSVG(r, x0){
+  const s=r.stock, col=EDGE[s.none?'none':s.type]||EDGE.neg, W=r.portrait?18:38, E=edgeItems(s, r.n);
+  let g=`<rect width="${W}" height="35" fill="${col.bg}"/>`;
+  const k0=Math.floor(x0/PERF.pitch)-1;
+  for(let k=k0; k*PERF.pitch-x0<W; k++){ const px=k*PERF.pitch+(PERF.pitch-PERF.w)/2-x0; if(px+PERF.w<0) continue;
+    [PERF.edge, 35-PERF.edge-PERF.h].forEach(y=>g+=`<rect x="${px.toFixed(2)}" y="${y.toFixed(2)}" width="${PERF.w}" height="${PERF.h}" rx="${PERF.r}" fill="${col.hole}"/>`); }
+  const txt=(it,base)=>{ const fs=it.fs||1.75, runs=it.runs||[[it.t,it.w||600]];
+    return `<text x="${it.at+1}" y="${base}" font-family="Inter,Helvetica Neue,Arial,sans-serif" font-size="${fs}" letter-spacing="0" fill="${col.ink}">`+
+      runs.map(([t,w])=>`<tspan font-weight="${w}">${t.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</tspan>`).join('')+`</text>`; };
+  E.top.forEach(it=>{ if(!it.bars) g+=txt(it, 1.72); });
+  E.bot.forEach(it=>{
+    if(it.bars){ let px=it.at+1; for(let k=0;k<16;k++){ const tall=k<2||k===15||((it.bars>>k)&1), h=tall?1.5:.75;
+        g+=`<rect x="${px.toFixed(2)}" y="${(35-.3-h).toFixed(2)}" width=".32" height="${h}" fill="${col.ink}"/>`; px+=.62; } return; }
+    if(it.arrow){ const x1=it.at+1, x2=x1+2.2; g+=txt(it, 35-1.05)+`<path d="M${x1} 34.47h${x2-x1-.1}v-.25l.45.3-.45.3v-.25H${x1}z" fill="${col.ink}"/>`; return; }
+    g+=txt(it, 35-.42);
+  });
+  return {W, svg:`<svg class="edge" viewBox="0 0 ${W} 35" aria-hidden="true">${g}</svg>`};
 }
 
 /* ========================================================= film sheet */
@@ -2435,7 +2468,9 @@ function renderRoll(){
   const g=$('rollGrid');
   $('rollTitle').textContent = `${st.roll.length} ${st.roll.length===1?'frame':'frames'}`;
   if(!st.roll.length){ g.innerHTML = `<div class="empty">No frames yet.<br>Press the shutter to take one.</div>`; return; }
-  g.innerHTML = st.roll.map((r,i)=>`<button class="frame ${r.stock.type==='bw'?'bw':''} ${r.portrait?'p':''}" data-i="${i}" aria-label="Open frame ${i+1}, ${r.stock.none?'digital':r.stock.maker+' '+r.stock.name}"><img src="${r.url}" alt=""><span class="edge" aria-hidden="true">${r.stock.none?'DIGITAL':r.stock.maker.toUpperCase()+' '+r.stock.name.toUpperCase()}</span></button>`).join('');
+  let x0=0;
+  g.innerHTML = st.roll.map((r,i)=>{ const e=edgeSVG({...r, n:r.n||i+1}, x0); x0+=e.W;
+    return `<button class="frame ${r.stock.type==='bw'?'bw':''} ${r.portrait?'p':''}" data-i="${i}" aria-label="Open frame ${i+1}, ${r.stock.none?'digital':r.stock.maker+' '+r.stock.name}">${e.svg}<img src="${r.url}" alt=""></button>`; }).join('');
   g.querySelectorAll('.frame').forEach(f=>f.onclick=()=>openShot(+f.dataset.i));
 }
 $('rollBtn').onclick = ()=>{
@@ -2455,7 +2490,7 @@ function fmtGeo(g){ const f=(v,p,n)=>Math.abs(v).toFixed(4)+'° '+(v>=0?p:n); re
 function loadImg(url){ return new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=url; }); }
 async function borderUrl(r){
   if(!r.bUrl){
-    try{ await document.fonts.load('600 20px "Barlow Condensed"'); }catch(e){}
+    try{ await Promise.all(['600','400','500'].map(w=>document.fonts.load(w+' 20px Inter'))); }catch(e){}
     const im=await loadImg(r.url);
     r.bUrl = filmFrame(im, r.stock, r.n, `${r.lens.toUpperCase()} ƒ${r.f} ${fmtT(r.t)}`).toDataURL('image/jpeg', .92);
   }
@@ -2727,7 +2762,7 @@ async function renderHeroes(){
   }
   canvas.width=pw; canvas.height=ph; Object.assign(st, keep);
   if(st.source) upload(st.source);
-  try{ await Promise.race([document.fonts.load('600 20px "Barlow Condensed"'), new Promise(r=>setTimeout(r,1500))]); }catch(e){}
+  try{ await Promise.race([Promise.all(['600','400','500'].map(w=>document.fonts.load(w+' 20px Inter'))), new Promise(r=>setTimeout(r,1500))]); }catch(e){}
   ['l','r','c'].forEach((k,i)=>{ const f=document.querySelector('#fan .fc.'+k); f.innerHTML=''; f.appendChild(out[i][0]); });
   const go=()=>{ const f=$('fan'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); };
   if(document.visibilityState==='visible') setTimeout(go, 60);
