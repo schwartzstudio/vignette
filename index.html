@@ -344,6 +344,7 @@ body.panel-open .status .ic-open{display:none} body.panel-open .status .ic-close
 .rollgrid .empty{flex:1;background:var(--panel);margin:0 -12px}
 .rollgrid .frame{flex:none;height:min(46dvh,300px);aspect-ratio:38/35;padding:0;border-radius:0;background:none;scroll-snap-align:center;box-sizing:border-box}
 .rollgrid .frame.p{aspect-ratio:18/35}
+.rollgrid .frame.cut{margin-left:14px}
 .rollgrid .frame::before,.rollgrid .frame::after{display:none}
 .rollgrid .frame .edge{position:absolute;inset:0;width:100%;height:100%;display:block}
 /* image area: 36 x 24mm (16 x 24 for portrait) inside the 38 x 35mm frame */
@@ -2025,7 +2026,7 @@ function loadFilm(s){
   st.stock = s; st.rollStart = st.roll.length; wake();
   if(!s.none){ st.isoSet = s.iso; const k = ISOS.indexOf(s.iso); if(isoDial && k>=0){ isoDial.pos=k; isoDial.last=k; isoDial.apply(); } }
   document.querySelectorAll('.film').forEach(b=>b.classList.toggle('on', b.dataset.id===s.id));
-  syncUI(); ensureAudio(); if(!s.none){ playWind(); toast(`Loaded ${s.maker} ${s.name}. ISO ${s.iso}.`, 1600); }
+  syncUI(); ensureAudio(); if(!s.none){ playLoad(); toast(`Loaded ${s.maker} ${s.name}. ISO ${s.iso}.`, 1600); }
 }
 /* dialogs: move focus in on open, keep Tab inside, hand focus back on close */
 const focusStack=[];
@@ -2317,7 +2318,18 @@ window.addEventListener('pointerdown', ()=>{
   ensureAudio(); if(audioUnlocked||!actx) return;
   try{ const b=actx.createBuffer(1,1,22050), s=actx.createBufferSource(); s.buffer=b; s.connect(actx.destination); s.start(0); audioUnlocked=true; }catch(e){} }, {capture:true});
 try{ if(navigator.audioSession) navigator.audioSession.type='transient'; }catch(e){}
-function ensureAudio(){ try{ if(!actx){ actx = new (window.AudioContext||window.webkitAudioContext)(); } if(actx.state!=='running') actx.resume().catch(()=>{}); }catch(e){} }
+function ensureAudio(){ try{ if(!actx){ actx = new (window.AudioContext||window.webkitAudioContext)(); loadSfx(); } if(actx.state!=='running') actx.resume().catch(()=>{}); }catch(e){} }
+/* recorded sounds from a real Nikon FE2. Shutter: mirror up at 4ms, curtains at ~42/48ms, mirror return
+   ~96-136ms; splitting at 45.5ms lets slow speeds and Bulb hold the shutter open between the curtains. */
+const SFX = {}, SFX_URLS = {shutter:'sounds/fe2-shutter.wav', wind:'sounds/film-wind.wav'};   // trimmed: shutter starts at the mirror
+const SH = {start:0, split:.0455, end:.366}, WIND = {start:0, end:1.21};
+function loadSfx(){ for(const k in SFX_URLS){ if(SFX[k]) continue; SFX[k]='loading';
+  fetch(SFX_URLS[k]).then(r=>r.arrayBuffer()).then(b=>new Promise((ok,no)=>actx.decodeAudioData(b, ok, no))).then(buf=>{ SFX[k]=buf; }).catch(()=>{ delete SFX[k]; }); } }
+const sfxReady = k => SFX[k] && SFX[k]!=='loading';
+function playClip(buf, at, from, to, gain=1){ // short fades at the cut points so the splits don't click
+  const s=actx.createBufferSource(), g=actx.createGain(), d=to-from, f=.002; s.buffer=buf;
+  g.gain.setValueAtTime(0,at); g.gain.linearRampToValueAtTime(gain,at+f); g.gain.setValueAtTime(gain,at+d-f); g.gain.linearRampToValueAtTime(0,at+d);
+  s.connect(g).connect(actx.destination); s.start(at, from, d); }
 document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') audioStale=true; });
 function click(t0, dur, freq, gain, q=1.2){
   const n = Math.floor(actx.sampleRate*dur), b = actx.createBuffer(1,n,actx.sampleRate), d=b.getChannelData(0);
@@ -2329,9 +2341,18 @@ function thump(t0, gain=.5){
   const o=actx.createOscillator(), g=actx.createGain(); o.frequency.setValueAtTime(140,t0); o.frequency.exponentialRampToValueAtTime(45,t0+.06);
   g.gain.setValueAtTime(gain,t0); g.gain.exponentialRampToValueAtTime(.001,t0+.08); o.connect(g).connect(actx.destination); o.start(t0); o.stop(t0+.1);
 }
-function soundOpen(at){ if(!actx) return; const n=at??actx.currentTime+.005; click(n,.03,2600,1.0); thump(n,.35); click(n+.012,.02,5200,.5); }
-function soundClose(at){ if(!actx) return; const n=at??actx.currentTime+.005; click(n,.025,3400,.9); thump(n+.01,.4); click(n+.03,.04,1800,.4); }
-function playShutter(t){ if(!actx) return; const n=actx.currentTime+.005; soundOpen(n); soundClose(n+.02+Math.min(t,8)); }
+function soundOpen(at){ if(!actx) return; const n=at??actx.currentTime+.005;
+  if(sfxReady('shutter')) return playClip(SFX.shutter, n, SH.start, SH.split);
+  click(n,.03,2600,1.0); thump(n,.35); click(n+.012,.02,5200,.5); }
+function soundClose(at){ if(!actx) return; const n=at??actx.currentTime+.005;
+  if(sfxReady('shutter')) return playClip(SFX.shutter, n, SH.split, SH.end);
+  click(n,.025,3400,.9); thump(n+.01,.4); click(n+.03,.04,1800,.4); }
+function playShutter(t){ if(!actx) return; const n=actx.currentTime+.005;
+  if(sfxReady('shutter')){ // as recorded up to 1/125; slower speeds hold the gap between the curtains
+    if(t<=1/125) return playClip(SFX.shutter, n, SH.start, SH.end);
+    soundOpen(n); soundClose(n+(SH.split-SH.start)+Math.min(t,8)); return; }
+  soundOpen(n); soundClose(n+.02+Math.min(t,8)); }
+function playLoad(){ if(!actx) return; if(sfxReady('wind')) playClip(SFX.wind, actx.currentTime+.01, WIND.start, WIND.end); else playWind(); }
 function playWind(){
   if(!actx) return; const n=actx.currentTime+.02;
   for(let i=0;i<9;i++) click(n+i*.028,.012,4200+Math.random()*900,.18,4);
@@ -2469,8 +2490,11 @@ function renderRoll(){
   $('rollTitle').textContent = `${st.roll.length} ${st.roll.length===1?'frame':'frames'}`;
   if(!st.roll.length){ g.innerHTML = `<div class="empty">No frames yet.<br>Press the shutter to take one.</div>`; return; }
   let x0=0;
-  g.innerHTML = st.roll.map((r,i)=>{ const e=edgeSVG({...r, n:r.n||i+1}, x0); x0+=e.W;
-    return `<button class="frame ${r.stock.type==='bw'?'bw':''} ${r.portrait?'p':''}" data-i="${i}" aria-label="Open frame ${i+1}, ${r.stock.none?'digital':r.stock.maker+' '+r.stock.name}">${e.svg}<img src="${r.url}" alt=""></button>`; }).join('');
+  g.innerHTML = st.roll.map((r,i)=>{ const p=st.roll[i-1], n=r.n||i+1;
+    // a new roll (different stock, or the count started over) is a separate strip
+    const cut = i>0 && (p.stock.id!==r.stock.id || n<=(p.n||i)); if(cut) x0=0;
+    const e=edgeSVG({...r, n}, x0); x0+=e.W;
+    return `<button class="frame ${r.stock.type==='bw'?'bw':''} ${r.portrait?'p':''}${cut?' cut':''}" data-i="${i}" aria-label="Open frame ${i+1}, ${r.stock.none?'digital':r.stock.maker+' '+r.stock.name}">${e.svg}<img src="${r.url}" alt=""></button>`; }).join('');
   g.querySelectorAll('.frame').forEach(f=>f.onclick=()=>openShot(+f.dataset.i));
 }
 $('rollBtn').onclick = ()=>{
