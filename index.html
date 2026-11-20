@@ -13,7 +13,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <title>VIGNETTE: Analog Film Camera</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@500;600&family=Kameron:wght@700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
   --ease-out:cubic-bezier(.25,1,.5,1); --ease-in-out:cubic-bezier(.65,0,.35,1);
@@ -23,7 +23,7 @@
   --r-ctl:14px; --r-tile:16px; --r-card:28px;
   --bg:#0b0b0c; --panel:#131314; --line:#232325; --ink:#ebe8e1; --mute:#8d8b86; --dim:#83807a;
   --accent:#e3392b; --accent-btn:#c8301f; --chrome1:#f2f2f0; --chrome2:#9d9d9b; --scale:#d8d4ca;
-  --num:'Barlow Condensed', 'Arial Narrow', sans-serif; --mono:'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  --num:'Barlow Condensed', 'Arial Narrow', sans-serif;
   --edge:#3a3a3c; --edge-soft:#2a2a2c; --edge-hi:#4a4a4c; --raise:#1b1b1d; --raise-lo:#161618; --bg-0:rgba(11,11,12,0);
   --amber:#e8c547; --go:#5fd07d; --warn:#ef5a4a; --cool:#6f9bf0;
 }
@@ -410,8 +410,6 @@ body.panel-open .status .ic-open{display:none} body.panel-open .status .ic-close
 .ob.p{transform:translateX(40%);opacity:0;pointer-events:none}
 .intro[data-step=perms] .ob.w{transform:translateX(-40%);opacity:0;pointer-events:none}
 .intro[data-step=perms] .ob.p{transform:none;opacity:1;pointer-events:auto}
-.ob .logo{display:flex;align-items:center;justify-content:center;width:96px;height:96px;border-radius:50%;background:var(--ink);box-shadow:0 10px 30px rgba(0,0,0,.5)}
-.ob .logo span{font:700 34px/1 Kameron,Rockwell,serif;letter-spacing:.03em;color:var(--bg);transform:scaleX(1.08) translateY(1px)}
 .ob h1{margin:28px 0 0;font:600 30px/1.1 Inter,system-ui,sans-serif;letter-spacing:-.01em;color:#fff}
 .ob .lede{margin:14px auto 0;max-width:330px;color:var(--mute);font-size:17px;line-height:1.45}
 .fan{position:relative;flex:1;min-height:180px;width:calc(100% + 52px);margin:0 -26px;display:flex;align-items:center;justify-content:center}
@@ -427,7 +425,7 @@ body.panel-open .status .ic-open{display:none} body.panel-open .status .ic-close
 .ob .bot{width:100%;max-width:380px;margin-top:auto;display:grid;gap:14px;justify-items:center}
 .cta{width:100%;height:54px;border-radius:13px;background:var(--accent);color:#fff;font:500 18px/1 Inter,system-ui,sans-serif;border:0}
 .cta:active{filter:brightness(.88)}
-.ob .fine{font:400 11px/1.6 var(--mono);letter-spacing:.02em;color:#5d5b56;text-transform:uppercase}
+.ob .fine{font:500 11px/1.6 var(--num);letter-spacing:.02em;color:#5d5b56;text-transform:uppercase}
 .ob .fine b{font-weight:500;color:#77756f}
 .perms{list-style:none;margin:34px auto 0;padding:0;display:grid;gap:26px;text-align:left;width:100%;max-width:360px}
 .perms li{display:grid;grid-template-columns:44px 1fr;gap:18px;align-items:center}
@@ -436,7 +434,7 @@ body.panel-open .status .ic-open{display:none} body.panel-open .status .ic-close
 .perms span{display:block;margin-top:5px;color:var(--mute);font-size:16px;line-height:1.35}
 @media (min-width:700px) and (min-height:700px){ .ob{padding-top:9dvh} }
 @media (orientation:landscape) and (max-height:520px){
-  .ob{padding-top:calc(env(safe-area-inset-top) + 16px)} .ob .logo{width:60px;height:60px} .ob .logo span{font-size:22px} .ob h1{margin-top:12px;font-size:22px}
+  .ob{padding-top:calc(env(safe-area-inset-top) + 16px)} .ob h1{margin-top:12px;font-size:22px}
   .ob .lede{display:none} .ob .tag{display:none} .fan .fc.c{height:min(46dvh,260px)} .fan .fc.l,.fan .fc.r{height:min(38dvh,214px)} .perms{margin-top:14px;gap:10px;grid-template-columns:1fr 1fr;max-width:640px}
 }
 /* ===== photo viewer */
@@ -448,13 +446,13 @@ body.panel-open .status .ic-open{display:none} body.panel-open .status .ic-close
 .lb-circ svg{width:22px;height:22px}
 .lb-title{min-width:0;text-align:left}
 .lb-title div{display:flex;align-items:center;gap:8px}
-.lb-title b{font:500 19px/1.1 var(--mono);color:#fff;letter-spacing:.01em}
-.lb-title .tg{font:500 9px/1 var(--mono);letter-spacing:.04em;color:var(--mute);border:1px solid var(--edge-hi);border-radius:3px;padding:3px 4px}
+.lb-title b{font:600 21px/1.1 var(--num);color:#fff;letter-spacing:.03em}
+.lb-title .tg{font:600 11px/1 var(--num);letter-spacing:.06em;color:var(--mute);border:1px solid var(--edge-hi);border-radius:3px;padding:3px 4px}
 .lb-title small{display:block;margin-top:5px;color:var(--mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lb-stage{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;padding:14px 0 10px;touch-action:pan-y}
 .lightbox .lb-stage img{max-width:100%!important;max-height:100%!important;width:auto;height:auto;object-fit:contain;transition:transform .2s,opacity .2s}
 .lightbox.border .lb-stage img{max-width:calc(100% - 24px)!important}
-.lb-meta{flex:none;font:400 11px/1.6 var(--mono);letter-spacing:.04em;color:var(--mute);text-transform:uppercase;text-align:center;padding:0 16px}
+.lb-meta{flex:none;font:500 13px/1.6 var(--num);letter-spacing:.06em;color:var(--mute);text-transform:uppercase;text-align:center;padding:0 16px}
 .lb-meta b{color:var(--ink);font-weight:500}
 .lb-strip{flex:none;display:flex;gap:6px;justify-content:safe center;overflow-x:auto;scrollbar-width:none;width:100%;padding:16px 16px 14px;position:relative}
 .lb-strip::-webkit-scrollbar{display:none}
@@ -1903,7 +1901,7 @@ function syncUI(){
 
 /* 35mm cartridge drawing for film tiles and the stock pill, in the box colors */
 function canSVG(s){
-  if(s.none) return `<svg viewBox="0 0 56 48"><rect x="11" y="6" width="22" height="36" rx="3" fill="none" stroke="#6a6a6a" stroke-width="1.2" stroke-dasharray="3 2.4"/><text x="22" y="26.5" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7" font-weight="600" fill="#8a8a8a">OFF</text></svg>`;
+  if(s.none) return `<svg viewBox="0 0 56 48"><rect x="11" y="6" width="22" height="36" rx="3" fill="none" stroke="#6a6a6a" stroke-width="1.2" stroke-dasharray="3 2.4"/><text x="22" y="26.5" text-anchor="middle" font-family="Barlow Condensed,Arial Narrow,sans-serif" font-size="8.5" font-weight="700" fill="#8a8a8a">OFF</text></svg>`;
   const b=s.box, id='cn'+s.id, tongue = s.type==='neg' ? '#6b4320' : s.type==='bw' ? '#3b3b3b' : '#2a2422';
   const top = b[3] ? `<rect x="10" y="9" width="22" height="4.5" fill="${b[3]}"/>` : '';
   let holes=''; for(let i=0;i<4;i++) holes += `<rect x="${34.5+i*4.4}" y="16.3" width="2.4" height="1.7" rx=".5" fill="#0b0b0b" opacity=".85"/>`;
@@ -1951,9 +1949,9 @@ function filmFrame(src, s, n, extra){
           x.fillRect(px, flip?band[0]:band[1]-h, .3*u, h); px += .62*u; }
         return;
       }
-      let fs=1.12*u; x.font=`500 ${fs}px "IBM Plex Mono", ui-monospace, monospace`;
+      let fs=1.12*u; x.font=`600 ${fs}px "Barlow Condensed", "Arial Narrow", sans-serif`;
       const maxW=(it.max||1)*len; let w=x.measureText(it.t).width;
-      if(w>maxW){ fs*=maxW/w; x.font=`500 ${fs}px "IBM Plex Mono", ui-monospace, monospace`; }
+      if(w>maxW){ fs*=maxW/w; x.font=`600 ${fs}px "Barlow Condensed", "Arial Narrow", sans-serif`; }
       x.fillText(it.t, at, mid+fs*.04);
     });
   };
@@ -2457,7 +2455,7 @@ function fmtGeo(g){ const f=(v,p,n)=>Math.abs(v).toFixed(4)+'° '+(v>=0?p:n); re
 function loadImg(url){ return new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=url; }); }
 async function borderUrl(r){
   if(!r.bUrl){
-    try{ await document.fonts.load('500 20px "IBM Plex Mono"'); }catch(e){}
+    try{ await document.fonts.load('600 20px "Barlow Condensed"'); }catch(e){}
     const im=await loadImg(r.url);
     r.bUrl = filmFrame(im, r.stock, r.n, `${r.lens.toUpperCase()} ƒ${r.f} ${fmtT(r.t)}`).toDataURL('image/jpeg', .92);
   }
@@ -2729,7 +2727,7 @@ async function renderHeroes(){
   }
   canvas.width=pw; canvas.height=ph; Object.assign(st, keep);
   if(st.source) upload(st.source);
-  try{ await Promise.race([document.fonts.load('500 20px "IBM Plex Mono"'), new Promise(r=>setTimeout(r,1500))]); }catch(e){}
+  try{ await Promise.race([document.fonts.load('600 20px "Barlow Condensed"'), new Promise(r=>setTimeout(r,1500))]); }catch(e){}
   ['l','r','c'].forEach((k,i)=>{ const f=document.querySelector('#fan .fc.'+k); f.innerHTML=''; f.appendChild(out[i][0]); });
   const go=()=>{ const f=$('fan'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); };
   if(document.visibilityState==='visible') setTimeout(go, 60);
