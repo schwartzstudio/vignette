@@ -2322,13 +2322,13 @@ function ensureAudio(){ try{ if(!actx){ actx = new (window.AudioContext||window.
 /* recorded sounds from a real Nikon FE2. Shutter: mirror up at 4ms, curtains at ~42/48ms, mirror return
    ~96-136ms; splitting at 45.5ms lets slow speeds and Bulb hold the shutter open between the curtains. */
 const SFX = {}, SFX_URLS = {shutter:'sounds/fe2-shutter.wav', wind:'sounds/film-wind.wav'};   // trimmed: shutter starts at the mirror
-const SH = {start:0, split:.0455, end:.366}, WIND = {start:0, end:1.21};
+const SH = {start:0, split:.0455, end:.706}, WIND = {start:0, end:1.21};
 function loadSfx(){ for(const k in SFX_URLS){ if(SFX[k]) continue; SFX[k]='loading';
   fetch(SFX_URLS[k]).then(r=>r.arrayBuffer()).then(b=>new Promise((ok,no)=>actx.decodeAudioData(b, ok, no))).then(buf=>{ SFX[k]=buf; }).catch(()=>{ delete SFX[k]; }); } }
 const sfxReady = k => SFX[k] && SFX[k]!=='loading';
-function playClip(buf, at, from, to, gain=1){ // short fades at the cut points so the splits don't click
-  const s=actx.createBufferSource(), g=actx.createGain(), d=to-from, f=.002; s.buffer=buf;
-  g.gain.setValueAtTime(0,at); g.gain.linearRampToValueAtTime(gain,at+f); g.gain.setValueAtTime(gain,at+d-f); g.gain.linearRampToValueAtTime(0,at+d);
+function playClip(buf, at, from, to, gain=1){ // 2ms fade in at the cut; the end only fades if it's a mid-sound cut
+  const s=actx.createBufferSource(), g=actx.createGain(), d=to-from, f=.002, fo = to>=buf.duration-.01 ? .12 : f; s.buffer=buf;
+  g.gain.setValueAtTime(0,at); g.gain.linearRampToValueAtTime(gain,at+f); g.gain.setValueAtTime(gain,at+d-fo); g.gain.linearRampToValueAtTime(0,at+d);
   s.connect(g).connect(actx.destination); s.start(at, from, d); }
 document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') audioStale=true; });
 function click(t0, dur, freq, gain, q=1.2){
