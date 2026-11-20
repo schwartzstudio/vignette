@@ -22,12 +22,12 @@
   --tile:rgba(255,255,255,.03); --tile-line:rgba(255,255,255,.08); --tile-on:rgba(255,255,255,.1); --tile-line-on:rgba(255,255,255,.28);
   --r-ctl:14px; --r-tile:16px; --r-card:28px;
   --bg:#0b0b0c; --panel:#131314; --line:#232325; --ink:#ebe8e1; --mute:#8d8b86; --dim:#83807a;
-  --accent:#e3392b; --accent-btn:#c8301f; --chrome1:#f2f2f0; --chrome2:#9d9d9b; --scale:#d8d4ca;
+  --accent:#e2352f; --accent-deep:#c22a2a; --accent-text:#f05a55; --accent-text-dim:rgba(240,90,85,.7); --paint-red:#d8262c; --chrome1:#f2f2f0; --chrome2:#9d9d9b; --scale:#d8d4ca;
   --num:'Barlow Condensed', 'Arial Narrow', sans-serif;
   --edge:#3a3a3c; --edge-soft:#2a2a2c; --edge-hi:#4a4a4c; --raise:#1b1b1d; --raise-lo:#161618; --bg-0:rgba(11,11,12,0);
-  --amber:#e8c547; --go:#5fd07d; --warn:#ef5a4a; --cool:#6f9bf0;
+  --amber:#e8c547; --go:#5fd07d; --cool:#6f9bf0;
   /* dials, focus ring, LED, reticle */
-  --black:#000; --white:#fff; --black-2:#111; --hairline:#333; --dial-ink:#a9a69e; --dial-dim:#8a877f; --dial-red:#8a3b2f; --dial-red-on:#ff5a40; --dial-green-on:#4fd27a; --dial-yellow-on:#f2d24a; --dial-blue-on:#5fa4ff; --dial-mode-on:#c7e09a; --track:#55555a; --tick-mark:#5a5a5c; --tick-major:#a19e96; --tick-ft:#a08d45; --led:#ff2a2a; --led-off:#3a0c0c; --led-ink:#3a0000; --raise-hi:#1f1f21; --film-base:#0a0806; --fine:#5d5b56; --reticle:rgba(255,214,92,.95);
+  --black:#000; --white:#fff; --black-2:#111; --hairline:#333; --dial-ink:#a9a69e; --dial-dim:#8a877f; --dial-green-on:#4fd27a; --dial-yellow-on:#f2d24a; --dial-blue-on:#5fa4ff; --dial-mode-on:#c7e09a; --track:#55555a; --tick-mark:#5a5a5c; --tick-major:#a19e96; --tick-ft:#a08d45; --led:#ff2a2a; --led-off:#3a0c0c; --led-ink:#3a0000; --raise-hi:#1f1f21; --film-base:#0a0806; --fine:#5d5b56; --reticle:rgba(255,214,92,.95);
   /* shade (black) and highlight (white) overlays */
   --shade-25:rgba(0,0,0,.25); --shade-35:rgba(0,0,0,.35); --shade-40:rgba(0,0,0,.4); --shade-50:rgba(0,0,0,.5); --shade-55:rgba(0,0,0,.55); --shade-60:rgba(0,0,0,.6); --hl-05:rgba(255,255,255,.05); --hl-08:rgba(255,255,255,.08); --hl-10:rgba(255,255,255,.1); --hl-12:rgba(255,255,255,.12); --hl-14:rgba(255,255,255,.14); --hl-18:rgba(255,255,255,.18); --hl-30:rgba(255,255,255,.3); --hl-50:rgba(255,255,255,.5);
 }
@@ -131,7 +131,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .lensrow{display:flex;align-items:center;gap:14px;width:100%;padding:12px;border-radius:10px;text-align:left}
 .lensrow:hover{background:var(--raise)}.lensrow.on{background:var(--raise);box-shadow:inset 0 0 0 1px var(--edge)}
 .lensrow .lt{display:flex;flex-direction:column;gap:3px;min-width:0}
-.lensrow b{font:600 18px/1.1 var(--num);letter-spacing:.02em}.lensrow b em{font-style:normal;font-size:14px;color:var(--warn);margin-left:4px;letter-spacing:.08em}
+.lensrow b{font:600 18px/1.1 var(--num);letter-spacing:.02em}.lensrow b em{font-style:normal;font-size:14px;color:var(--accent-text);margin-left:4px;letter-spacing:.08em}
 .lensrow span{color:var(--mute);font-size:12px;line-height:1.35}
 .lensart svg .chrome,.lensart .chrome{fill:var(--hl-18)}
 .lensart-w{width:76px;flex:none;display:flex;justify-content:flex-start;color:#a9a6a0}
@@ -159,7 +159,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .top .adr{cursor:pointer;position:relative;top:auto;left:auto;transform:none;flex:none;height:34px;width:64px;margin:0 auto 0 8px;border-radius:17px;border:1px solid var(--line);background:var(--bg);box-shadow:none;
   -webkit-mask:linear-gradient(90deg,transparent,var(--black) 30%,var(--black) 70%,transparent);mask:linear-gradient(90deg,transparent,var(--black) 30%,var(--black) 70%,transparent)}
 .top .adr .strip span{font:500 15px/1 var(--num);color:var(--ink)}
-.top .adr .strip span.green{color:var(--go)}.top .adr .strip span.red{color:var(--warn)}.top .adr .strip span.yellow{color:var(--amber)}.top .adr .strip span.blue{color:var(--cool)}
+.top .adr .strip span.green{color:var(--go)}.top .adr .strip span.red{color:var(--accent-text)}.top .adr .strip span.yellow{color:var(--amber)}.top .adr .strip span.blue{color:var(--cool)}
 .adr::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--shade-35),transparent 22%,transparent 78%,var(--shade-35))}
 .shootbar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;width:100%;max-width:420px;gap:12px;flex:none}
 .slot{display:flex;align-items:center}.slot.l{justify-content:flex-start;padding-left:14px}.slot.r{justify-content:flex-end;padding-right:14px}
@@ -192,13 +192,13 @@ body.panel-open .status .ic-open{display:none} body.panel-open .status .ic-close
   background:repeating-linear-gradient(90deg,var(--edge) 0 1px,transparent 1px var(--tick,12px)) 0 100%/100% 6px no-repeat}
 .dial-item{position:absolute;top:50%;transform:translate(-50%,-56%);font:500 17px/1 var(--num);color:var(--dim);white-space:nowrap;transition:color .15s}
 .dial-item.on{color:var(--ink)}
-.dial-item.sec{color:var(--dial-red)}.dial-item.sec.on{color:var(--accent)}
+.dial-item.sec{color:var(--accent-text-dim)}.dial-item.sec.on{color:var(--accent)}
 .dial-item.third{color:#3e3d3a;font-size:13px}
-.dial-item.red{color:var(--dial-red)}.dial-item.red.on{color:var(--dial-red-on)}
+.dial-item.red{color:var(--accent-text-dim)}.dial-item.red.on{color:var(--accent-text)}
 .dial-item.green{color:#3f7a4e}.dial-item.green.on{color:var(--dial-green-on)}
 .dial-item.yellow{color:#8a7a2e}.dial-item.yellow.on{color:var(--dial-yellow-on)}
 .dial-item.blue{color:#355f8f}.dial-item.blue.on{color:var(--dial-blue-on)}
-.adr .strip span.green{color:#1d7a3c}.adr .strip span.red{color:#b0281c}.adr .strip span.yellow{color:#8a6c00}.adr .strip span.blue{color:#1f4f9a}
+.adr .strip span.green{color:#1d7a3c}.adr .strip span.red{color:var(--accent-text)}.adr .strip span.yellow{color:#8a6c00}.adr .strip span.blue{color:#1f4f9a}
 .dial-item.mode{color:#7e8d6e}.dial-item.mode.on{color:var(--dial-mode-on)}
 .dial-mark{position:absolute;left:50%;top:0;width:2px;height:7px;margin-left:-1px;background:var(--accent);border-radius:0 0 2px 2px}
 .dial.vert{width:52px;height:auto;align-self:center;margin:0 0 0 -12px;-webkit-mask:none;mask:none;border-radius:0 6px 6px 0;border-left:0}
@@ -324,7 +324,7 @@ body.panel-open .status .ic-open{display:none} body.panel-open .status .ic-close
   box-shadow:inset 0 2px 6px var(--shade-35),inset 0 -2px 3px var(--hl-50),0 0 0 1px var(--shade-60);transition:transform .08s,filter .08s}
 .shutter::after{content:"";position:absolute;inset:22px;border-radius:50%;
   background:radial-gradient(circle at 50% 35%,rgba(0,0,0,.18),var(--hl-12) 70%);box-shadow:inset 0 1px 2px var(--shade-25)}
-.shutter.half{box-shadow:0 0 0 3px rgba(227,57,43,.55),0 8px 20px var(--shade-55)}
+.shutter.half{box-shadow:0 0 0 3px rgba(226,53,47,.55),0 8px 20px var(--shade-55)}
 .shutter.half::before{transform:scale(.97);filter:brightness(.95)}
 .shutter.full::before{transform:scale(.93);filter:brightness(.86)}
 /* sheets */
@@ -467,7 +467,7 @@ body.panel-open .status .ic-open{display:none} body.panel-open .status .ic-close
 .lb-bar{width:auto!important;padding:0 8px!important}
 .lb-bar #lbBorder{font:500 15px/1 Inter,system-ui,sans-serif;padding:0 14px 0 10px}
 .lb-bar #lbBorder[aria-pressed=true]{background:var(--ink);color:var(--black-2)}
-.lb-bar #lbDel.arm{background:#5a1712;color:#ff8a7a}
+.lb-bar #lbDel.arm{background:var(--accent-deep);color:var(--white)}
 
 /* ===== sheet header: circular close, centered title */
 .sheet header{display:grid!important;grid-template-columns:44px 1fr 44px;align-items:center;padding:12px 12px 10px!important;border-bottom:0!important;margin-bottom:4px!important}
@@ -565,7 +565,7 @@ html,body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none}
 .unitbtn{border:1.5px solid var(--ink)!important;background:var(--bg)!important}
 .ftmode .unitbtn{border-color:var(--amber)!important}
 .apbtn{position:absolute;right:6px;top:50%;transform:translateY(-50%);z-index:3;height:40px;padding:0 6px 0 10px;font:600 17px/1 var(--num);letter-spacing:.02em;color:var(--ink);background:none;border:0}
-.apbtn.green{color:var(--go)}.apbtn.red{color:var(--warn)}.apbtn.yellow{color:var(--amber)}.apbtn.blue{color:var(--cool)}
+.apbtn.green{color:var(--go)}.apbtn.red{color:var(--accent-text)}.apbtn.yellow{color:var(--amber)}.apbtn.blue{color:var(--cool)}
 .focusH.over::after{content:"";position:absolute;right:0;top:0;bottom:0;width:84px;z-index:2;pointer-events:none;background:linear-gradient(270deg,var(--bg) 0 58px,var(--bg-0))}
 .focusV .apbtn,.focusH:not(.over) .apbtn{display:none}
 /* ===== welcome: pin the bottom block to the bottom */
@@ -744,7 +744,7 @@ html,body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none}
 .lab i{color:#e2dfd7!important}
 .pane .dial .dial-item{color:var(--dial-ink);text-shadow:0 1px 2px var(--shade-50)}
 .pane .dial .dial-item.on{color:var(--white)}
-.pane .dial .dial-item.red,.pane .dial .dial-item.sec{color:#c8584a}.pane .dial .dial-item.red.on,.pane .dial .dial-item.sec.on{color:var(--dial-red-on)}
+.pane .dial .dial-item.red,.pane .dial .dial-item.sec{color:var(--accent-text-dim)}.pane .dial .dial-item.red.on,.pane .dial .dial-item.sec.on{color:var(--accent-text)}
 .pane .dial .dial-item.green{color:#5fa874}.pane .dial .dial-item.green.on{color:var(--dial-green-on)}
 .pane .dial .dial-item.yellow{color:#b8a246}.pane .dial .dial-item.yellow.on{color:var(--dial-yellow-on)}
 .pane .dial .dial-item.blue{color:#5584bb}.pane .dial .dial-item.blue.on{color:var(--dial-blue-on)}
@@ -820,7 +820,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   transition:transform .26s var(--ease-out),opacity .16s,visibility 0s .26s}
 .lb-confirm.on{transform:none;opacity:1;visibility:visible;pointer-events:auto;transition:transform .3s var(--ease-out),opacity .16s}
 .lb-confirm p{margin:0 0 12px;color:var(--mute);font-size:13px;line-height:1.4}
-.lb-confirm button{width:100%;height:46px;border-radius:23px;background:var(--hl-10);color:#ff5a4a;font:600 16px/1 Inter,system-ui,sans-serif}
+.lb-confirm button{width:100%;height:46px;border-radius:23px;background:var(--hl-10);color:var(--accent-text);font:600 16px/1 Inter,system-ui,sans-serif}
 .lb-confirm button:active{background:var(--hl-18)}
 
 /* landscape card: one scroll for the whole card, tabs scroll away on both Film and Controls */
@@ -928,12 +928,12 @@ body.panel-open .panel.settle{transition:height .34s var(--ease-out)!important}
 /* ===== accessibility & touch: contrast, focus, motion, hit areas */
 .ob .fine{color:var(--mute)!important}
 .apbtn::before{content:"";position:absolute;left:50%;top:50%;width:max(100%,44px);height:max(100%,44px);transform:translate(-50%,-50%)}
-.cta{background:var(--accent-btn)}
+.cta{background:var(--accent-deep)}
 :focus{outline:none}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 /* dials fade out at their edges (mask), so an outline would vanish: mark focus on the index tick and the current value instead */
 .dial:focus-visible{outline:none}
-.dial:focus-visible .dial-mark{width:4px!important;margin-left:-2px!important;box-shadow:0 0 0 3px rgba(227,57,43,.35)}
+.dial:focus-visible .dial-mark{width:4px!important;margin-left:-2px!important;box-shadow:0 0 0 3px rgba(226,53,47,.35)}
 .dial.vert:focus-visible .dial-mark{width:17px!important;height:4px!important;margin-left:0!important;margin-top:-2px!important}
 .dial:focus-visible .dial-item.on{text-decoration:underline 2px var(--accent);text-underline-offset:5px}
 .shutter:focus-visible,.roundbtn:focus-visible,.lb-circ:focus-visible,.rollbtn:focus-visible{outline-offset:3px;border-radius:50%}
@@ -1256,6 +1256,7 @@ const st = {
 
 /* ========================================================= helpers */
 const $ = (id)=>document.getElementById(id);
+const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();   // a color token, for SVG/canvas drawing
 const clamp = (v,a,b)=>Math.min(b,Math.max(a,v));
 function toast(msg, ms=2600){ const t=$('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('on'),ms); }
 function haptic(ms=6){ try{ navigator.vibrate && navigator.vibrate(ms); }catch(e){} }
@@ -1524,7 +1525,7 @@ function meterGeom(H){
 function yOfT(t){ return MG.s0 + ((Math.log2(t) - T_TOP)/(T_BOT - T_TOP))*(MG.s1 - MG.s0); }
 function buildMeter(H){
   meterH = H; MG = meterGeom(H);
-  const W = 22, red = '#d8262c';
+  const W = 22, red = cssVar('--paint-red'), redText = cssVar('--accent-text');
   const ya = (y, x)=> MG.py + (x - MG.px)/MG.D*(y - MG.py);   // radial line through y, from the left pivot
   const top0 = MG.o, bot1 = MG.o + MG.L;
   // rounded on the left, square where the strip meets the image on the right
@@ -1544,7 +1545,7 @@ function buildMeter(H){
   const fs = clamp((MG.s1-MG.s0)/SCALE.length*0.82, 6, 11);   // up to the frame counter's 11
   SCALE.forEach(v=>{
     const t = v>0 ? 1/v : -v, y = yOfT(t), deg = y < MG.py ? Math.atan((y-MG.py)/MG.D)*57.2958 : 0;
-    s += `<text x="${W/2}" y="${y+fs*0.36}" transform="rotate(${deg.toFixed(2)} ${W/2} ${y.toFixed(2)})" text-anchor="middle" font-family="Barlow Condensed,Arial Narrow,Helvetica Neue,Arial,sans-serif" font-weight="600" font-size="${fs}" fill="${v<0?'#ff4a40':'#ebe8e1'}" letter-spacing="-.2">${Math.abs(v)}</text>`;
+    s += `<text x="${W/2}" y="${y+fs*0.36}" transform="rotate(${deg.toFixed(2)} ${W/2} ${y.toFixed(2)})" text-anchor="middle" font-family="Barlow Condensed,Arial Narrow,Helvetica Neue,Arial,sans-serif" font-weight="600" font-size="${fs}" fill="${v<0?redText:'#ebe8e1'}" letter-spacing="-.2">${Math.abs(v)}</text>`;
   });
   // green shutter speed / mode needle, then black meter needle on top
   s += `<defs><clipPath id="gClip"><rect x="0" y="-2000" width="4000" height="6000"/></clipPath></defs><g id="gNeedle" clip-path="url(#gClip)"><line id="gLine" stroke="#1fb24f" stroke-width="6.5" stroke-linecap="butt" opacity=".5"/></g>`;
@@ -1868,7 +1869,7 @@ function buildCounter(){
   let g = '';
   for(let i=0;i<=38;i++){
     const a = -i*FC_STEP, lab = i===0 ? 'S' : i>36 ? '' : (i%2 ? '•' : String(i));
-    const col = FC_RED.includes(i) ? '#e0412f' : '#e8e5dd';
+    const col = FC_RED.includes(i) ? cssVar('--accent-text') : '#e8e5dd';
     g += `<text x="28" y="18" transform="rotate(${a} 28 ${FC_R+7})" text-anchor="middle" font-family="Barlow Condensed,Arial Narrow,Helvetica Neue,Arial,sans-serif" font-weight="600" font-size="${i%2 && i ? 7 : 11}" fill="${col}">${lab}</text>`;
   }
   $('fcDial').innerHTML = `<g id="fcDisc">${g}</g>
