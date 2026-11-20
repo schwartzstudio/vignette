@@ -294,6 +294,10 @@ body.panel-open .status .ic-open{display:none} body.panel-open .status .ic-close
 .scrnote{margin:8px 2px 0;color:var(--mute);font-size:12px;line-height:1.45}
 .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .seg.two{grid-template-columns:repeat(2,1fr)} .seg.two .scr{justify-content:center;height:34px}
+/* invisible 44px tap areas; the buttons look the same */
+.seg .scr{position:relative} .seg .scr::after{content:"";position:absolute;left:0;right:0;top:50%;height:max(100%,44px);transform:translateY(-50%)}
+.grab{position:relative} .grab::after{content:"";position:absolute;left:0;right:0;top:0;bottom:-8px}   /* down into the gap above the tabs */
+body.panel-full .grab::after{content:none}   /* the full sheet's handle is already 56px tall */
 @media (orientation:portrait){ .pane.set{justify-content:flex-start;padding-top:2px} }   /* line up with the Screen pane */
 .scr{height:52px;border-radius:8px;border:1px solid var(--line);background:var(--bg);display:flex;align-items:center;gap:8px;padding:0 10px;font:600 15px/1 var(--num);letter-spacing:.06em;color:var(--mute)}
 .scr svg{width:34px;height:24px;flex:none}
@@ -808,11 +812,12 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 
 /* ===== photo viewer, round 3: thumbnails, info sheet, delete confirmation */
 .lb-strip{padding:14px 16px 12px}
-.lb-strip button{width:34px!important;height:44px!important;border-radius:4px;opacity:.5!important;transition:width .2s,opacity .2s}
+.lb-strip button{width:34px!important;height:44px!important;border-radius:4px;opacity:.5!important;transition:opacity .2s}
+.lb-strip .flip{position:absolute;top:0;bottom:0;background:center/cover no-repeat;pointer-events:none}
 .lb-strip button.on{width:58px!important;opacity:1!important}
 .lb-bar{width:calc(100% - 32px)!important;max-width:420px;justify-content:space-between;padding:0 10px}
 .lb-bar #lbInfoBtn[aria-pressed=true]{background:var(--hl-18)}
-.lb-info{flex:none;width:100%;max-height:0;overflow:hidden;transition:max-height .32s var(--ease-out)}
+.lb-info{flex:none;width:100%;max-height:0;overflow:hidden}
 .lightbox.info .lb-info{max-height:46vh}
 .lb-info-in{margin:4px 12px 2px;border-radius:24px;background:rgba(40,40,42,.72);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
   box-shadow:inset 0 1px .5px var(--hl-28),inset 0 0 0 .5px var(--hl-12);padding:6px 18px;max-height:calc(46vh - 8px);overflow-y:auto}
@@ -884,7 +889,6 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 
 :root{--sat:env(safe-area-inset-top)}
 .phead{display:contents}
-body.panel-open .panel.settle{transition:height .34s var(--ease-out)!important}
 @media (orientation:portrait){
   html body.panel-full .panel{padding-top:0}
   body.panel-full .phead{display:block;position:sticky;top:0;z-index:6;margin:0 -14px;padding:6px 14px 0;
@@ -912,7 +916,6 @@ body.panel-open .panel.settle{transition:height .34s var(--ease-out)!important}
 .lb-top{transition:opacity .22s}
 .lightbox.info .lb-top,.lightbox.idrag .lb-top{opacity:0;pointer-events:none}
 .lightbox.info .lb-stage .slide,.lightbox.idrag .lb-stage .slide{padding:0}
-.lb-stage .slide{transition:padding .25s}
 
 @media (orientation:portrait){
   .panel #tabs,.panel .pane{transition:opacity .14s ease}
@@ -2137,9 +2140,15 @@ $('status').onclick = ()=>{
     const h=Math.max(compactH||220, Math.min(M, g0.h0 - dy)); // never past full height, never below compact
     g0.h=h; g0.dy=dy; panel.style.height=h+'px'; set(0); applyProgress(progress(h));
   }, {capture:true});
-  const settle=(h, after)=>{ panel.classList.add('settle'); requestAnimationFrame(()=>{ panel.style.height=h+'px'; });
-    let done=false; const fin=()=>{ if(done) return; done=true; panel.classList.remove('settle'); after(); };
-    setTimeout(fin, 380); };
+  // settle to height h: lay out once at the larger height, then move the top edge with translate and keep the
+  // bottom in place with a matching clip (looks like a height animation, without layout every frame)
+  const settle=(h, after)=>{ panel.classList.add('settle');
+    const cur=panel.getBoundingClientRect().height, H=Math.max(cur,h), R=getComputedStyle(panel).borderBottomLeftRadius;
+    const frame=t=>({translate:`0 ${t}px`, clipPath:`inset(0 0 ${t}px 0 round 0 0 ${R} ${R})`});
+    panel.style.height=H+'px';
+    const anim = reduceMotion() || !panel.animate ? null : panel.animate([frame(H-cur), frame(H-h)], {duration:340, easing:'cubic-bezier(.25,1,.5,1)'});
+    let done=false; const fin=()=>{ if(done) return; done=true; panel.style.height=h+'px'; anim && anim.cancel(); panel.classList.remove('settle'); after(); };
+    anim ? anim.finished.then(fin, fin) : fin(); setTimeout(fin, 420); };
   const clear=()=>{ panel.style.height=''; panel.classList.remove('stretching'); els().forEach(el=>{ el.style.transition=''; el.style.opacity=''; }); };
   const end=()=>{ if(!g0) return; const d=g0; g0=null; if(!d.on) return;
     const v=d.dy/Math.max(1,performance.now()-d.t);
@@ -2512,6 +2521,24 @@ function buildStrip(){
   strip.innerHTML = st.roll.map((r,i)=>`<button data-i="${i}" aria-label="${shotLabel(r)}" style="background-image:url(${r.url})"></button>`).join('');
   strip.querySelectorAll('button').forEach(b=>b.onclick=()=>showShot(+b.dataset.i, true));
 }
+/* the selected thumbnail widens and its neighbours make room. Laid out once, then animated with
+   transform (neighbours) and clip-path (the two thumbnails changing width): no layout per frame. */
+const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+function flipStrip(btns, change){
+  btns=[...btns]; if(reduceMotion() || !btns.length || !btns[0].animate){ change(); return; }
+  const A=btns.map(b=>b.getBoundingClientRect()); change(); const Z=btns.map(b=>b.getBoundingClientRect());
+  const ease='cubic-bezier(.25,1,.5,1)', dur=200;
+  btns.forEach((b,k)=>{ const a=A[k], z=Z[k], dx=(a.left+a.width/2)-(z.left+z.width/2);
+    if(Math.abs(dx)<.5 && Math.abs(a.width-z.width)<.5) return;
+    if(Math.abs(a.width-z.width)<.5){ b.animate([{transform:`translateX(${dx}px)`},{transform:'none'}], {duration:dur, easing:ease}); return; }
+    // width changes: draw the photo on a layer as wide as the larger of the two, clipped to the visible width
+    const W=Math.max(a.width,z.width), cl=w=>`inset(0 ${(W-w)/2}px round 4px)`, L=document.createElement('i');
+    L.className='flip'; L.style.backgroundImage=b.style.backgroundImage; L.style.width=W+'px'; L.style.left=(z.width-W)/2+'px';
+    const bg=b.style.backgroundImage; b.style.backgroundImage='none'; b.appendChild(L);
+    L.animate([{transform:`translateX(${dx}px)`, clipPath:cl(a.width)},{transform:'none', clipPath:cl(z.width)}], {duration:dur, easing:ease})
+      .finished.catch(()=>{}).then(()=>{ L.remove(); b.style.backgroundImage=bg; });
+  });
+}
 function setMeta(i){
   const r=st.roll[i]; if(!r) return;
   lbIdx=i; lbShot=r;
@@ -2522,7 +2549,7 @@ function setMeta(i){
   $('lbInfo').innerHTML = row('Film', r.stock.none?'No film':r.stock.maker+' '+r.stock.name) + row('Film speed', 'ISO '+(r.iso||r.stock.iso))
     + row('Lens', r.lensName||r.lens) + row('Aperture', fN(r.f)) + row('Shutter', fmtT(r.t)) + row('Exposure', ev+' EV')
     + row('Taken', fmtWhen(r.time)) + (r.geo ? row('Location', fmtGeo(r.geo)) : '');
-  const th=$('lbStrip').querySelectorAll('button'); th.forEach((b,k)=>b.classList.toggle('on', k===i));
+  const th=$('lbStrip').querySelectorAll('button'); flipStrip(th, ()=>th.forEach((b,k)=>b.classList.toggle('on', k===i)));
   if(th[i]) th[i].scrollIntoView({inline:'center', block:'nearest', behavior:'smooth'});
   $('lbConfirm').classList.remove('on');
   $('lbDel').classList.remove('arm');
