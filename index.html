@@ -231,7 +231,7 @@ body.panel-open .status .ic-open{display:none} body.panel-open .status .ic-close
 .ftmode .unitbtn{color:var(--amber);border-color:#5a4f22}
 .focusH .unitbtn{left:6px;top:50%;transform:translateY(-50%)}
 .focusV .unitbtn{top:8px;left:50%;transform:translateX(-50%)}
-.unitbtn::after{content:"";position:absolute;inset:-8px}   /* 44px tap area */
+.unitbtn::after{content:"";position:absolute;inset:-9px}   /* 44px tap area (the 30px button has a 1px border) */
 .unitbtn{display:grid;place-items:center;width:30px;height:30px;min-width:0;padding:0;line-height:1;box-sizing:border-box}
 /* center the ink, not the line box: 'm' is all x-height, 'ft' reaches ascender height */
 .unitbtn span{display:block;text-box:trim-both ex alphabetic}
@@ -295,6 +295,7 @@ body.panel-open .status .ic-open{display:none} body.panel-open .status .ic-close
 .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .seg.two{grid-template-columns:repeat(2,1fr)} .seg.two .scr{justify-content:center;height:34px}
 /* invisible 44px tap areas; the buttons look the same */
+#filmPill{position:relative} #filmPill::after{content:"";position:absolute;inset:-2px}   /* 44px wide when it stands vertical in landscape */
 .seg .scr{position:relative} .seg .scr::after{content:"";position:absolute;left:0;right:0;top:50%;height:max(100%,44px);transform:translateY(-50%)}
 .grab{position:relative} .grab::after{content:"";position:absolute;left:0;right:0;top:0;bottom:-8px}   /* down into the gap above the tabs */
 body.panel-full .grab::after{content:none}   /* the full sheet's handle is already 56px tall */
@@ -822,6 +823,13 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .lb-info-in{margin:4px 12px 2px;border-radius:24px;background:rgba(40,40,42,.72);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
   box-shadow:inset 0 1px .5px var(--hl-28),inset 0 0 0 .5px var(--hl-12);padding:6px 18px;max-height:calc(46vh - 8px);overflow-y:auto}
 .lb-info dl{margin:0}
+.lb-info-x{display:none}
+@media (hover:hover) and (pointer:fine){
+  .lb-info-in{position:relative;padding-top:40px!important}
+  .lb-info-x{display:grid;place-items:center;position:absolute;top:10px;right:12px;width:30px;height:30px;border-radius:50%;background:var(--hl-12);color:var(--ink)}
+  .lb-info-x::after{content:"";position:absolute;inset:-7px}
+  .lb-info-x:hover{background:var(--hl-18)}
+}
 .lb-info dl div{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:.5px solid var(--hl-12)}
 .lb-info dl div:last-child{border-bottom:0}
 .lb-info dt{color:var(--mute);font-size:15px}
@@ -1081,7 +1089,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <button class="lb-circ" id="lbCam" aria-label="Back to camera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3.5 8.5a1.5 1.5 0 0 1 1.5-1.5h2.6l1.5-2h5.8l1.5 2H19a1.5 1.5 0 0 1 1.5 1.5v9A1.5 1.5 0 0 1 19 19H5a1.5 1.5 0 0 1-1.5-1.5z"/><circle cx="12" cy="13" r="3.6"/></svg></button>
   </div>
   <div class="lb-stage" id="lbStage"><img id="lbImg" alt=""></div>
-  <div class="lb-info" id="lbInfoSheet" aria-hidden="true"><div class="lb-info-in"><dl id="lbInfo"></dl></div></div>
+  <div class="lb-info" id="lbInfoSheet" aria-hidden="true"><div class="lb-info-in"><button class="lb-info-x" id="lbInfoX" aria-label="Close info"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button><dl id="lbInfo"></dl></div></div>
   <div class="lb-strip" id="lbStrip"></div>
   <div class="lb-confirm" id="lbConfirm" role="dialog" aria-label="Delete photo"><p>This frame will be deleted from your roll.</p><button id="lbConfirmDel">Delete Photo</button></div>
   <div class="lb-bar">
@@ -2040,6 +2048,7 @@ document.addEventListener('keydown', e=>{
   if(e.key==='Escape'){ // close whatever is on top
     const c=$('lbConfirm');
     if(c.classList.contains('on')){ c.classList.remove('on'); $('lbDel').focus(); }
+    else if($('lightbox').classList.contains('info')){ setInfo(false); $('lbInfoBtn').focus({preventScroll:true}); }
     else if($('lightbox').classList.contains('on')) closeShot();
     else if(document.querySelector('.sheet.on')) closeSheets();
     else if(document.body.classList.contains('panel-full')) setFull(false);
@@ -2587,7 +2596,13 @@ function measureInfo(){ const H=infoH(); lbEl.style.setProperty('--H', H+'px');
   lbEl.style.setProperty('--k', String(k)); return H; }
 function setInfo(on){ if(on && !lbEl.classList.contains('info') && !lbEl.classList.contains('idrag')) measureInfo(); else if(lbEl.classList.contains('idrag')) {} else lbEl.style.setProperty('--H', infoH()+'px'); lbEl.style.removeProperty('--p'); lbEl.classList.remove('idrag');
   lbEl.classList.toggle('info', on); $('lbInfoBtn').setAttribute('aria-pressed', String(on)); $('lbInfoSheet').setAttribute('aria-hidden', String(!on)); }
-$('lbInfoBtn').onclick = ()=>{ setInfo(!$('lightbox').classList.contains('info')); haptic(3); };
+$('lbInfoBtn').onclick = ()=>{ const on=!$('lightbox').classList.contains('info'); setInfo(on); haptic(3);
+  if(on && $('lbInfoX').getClientRects().length) $('lbInfoX').focus({preventScroll:true}); };
+$('lbInfoX').onclick = ()=>{ setInfo(false); $('lbInfoBtn').focus({preventScroll:true}); };
+{ // with a mouse, a click on the photo puts the info away (a drag doesn't)
+  let p0=null; $('lbStage').addEventListener('pointerdown', e=>{ p0 = e.pointerType==='mouse' ? {x:e.clientX, y:e.clientY} : null; });
+  $('lbStage').addEventListener('click', e=>{ if(p0 && Math.hypot(e.clientX-p0.x, e.clientY-p0.y)<5 && $('lightbox').classList.contains('info')) setInfo(false); p0=null; });
+}
 { // pull the photo up to slide the info out from underneath it; pull down to put it away. Follows the finger.
   let g=null;
   const down=e=>{ g={y:e.clientY, x:e.clientX, t:performance.now(), on:false, base: lbEl.classList.contains('info') ? infoH() : 0, id:e.pointerId}; };
