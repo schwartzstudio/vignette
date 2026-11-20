@@ -2419,7 +2419,6 @@ async function fire(opt={}){
   const hold = opt.bulb ? 60 : Math.max(90, Math.min(m.t*1000, 1600));
   setTimeout(()=>{ bo.classList.remove('on'); }, hold);
   setTimeout(()=>{
-    playWind();
     if(shot.url) $('rollBtn').style.backgroundImage = `url(${shot.url})`;
     syncUI(); st.busy=false;
   }, hold+120);
