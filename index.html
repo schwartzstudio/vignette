@@ -252,7 +252,7 @@ body.panel-open .status .ic-open{display:none} body.panel-open .status .ic-close
   .pane.pfilm{overflow-x:auto}
   .pane:not(.on){display:none!important}
   .pane .lab{display:none}
-  .pane[data-pane=screen] .lab{display:flex}
+  .pane[data-pane=screen] .lab,.pane[data-pane=settings] .lab{display:flex}
   .pane[data-pane=iso]{position:relative}
   .pane[data-pane=iso] .lab{display:flex;position:absolute;top:8px;left:0;right:0;justify-content:center;font-size:0}
   .pane[data-pane=iso] .lab i{font-size:12px;font-style:normal}
@@ -280,6 +280,8 @@ body.panel-open .status .ic-open{display:none} body.panel-open .status .ic-close
 @media (orientation:portrait){ .pane[data-pane=aperture]{gap:8px} .lens{height:34px} .pane[data-pane=aperture] .lab{display:none} }
 .scrnote{margin:8px 2px 0;color:var(--mute);font-size:12px;line-height:1.45}
 .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.seg.two{grid-template-columns:repeat(2,1fr)} .seg.two .scr{justify-content:center}
+.pane.set{padding:14px 14px 0}
 .scr{height:52px;border-radius:8px;border:1px solid var(--line);background:var(--bg);display:flex;align-items:center;gap:8px;padding:0 10px;font:600 15px/1 var(--num);letter-spacing:.06em;color:var(--mute)}
 .scr svg{width:34px;height:24px;flex:none}
 .scr.on{border-color:var(--edge-hi);color:var(--ink);background:var(--raise-lo)}
@@ -488,7 +490,7 @@ body.panel-open .status .ic-open{display:none} body.panel-open .status .ic-close
 .lb-bar{box-shadow:inset 0 1px .5px rgba(255,255,255,.35),inset 0 0 0 .5px rgba(255,255,255,.12),0 10px 30px rgba(0,0,0,.5)!important}
 body.panel-open .ctlbtn{background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.12))!important}
 .shootbar .rollbtn{border:0!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),0 6px 18px rgba(0,0,0,.4)}
-.cta{box-shadow:inset 0 1px .5px rgba(255,255,255,.5),inset 0 0 0 .5px rgba(255,255,255,.2),0 10px 26px rgba(227,57,43,.25)}
+.cta{box-shadow:inset 0 1px .5px rgba(255,255,255,.5),inset 0 0 0 .5px rgba(255,255,255,.2)}
 /* ===== tap to focus reticle */
 .af{position:absolute;left:0;top:0;width:76px;height:76px;margin:-38px 0 0 -38px;z-index:3;pointer-events:none;opacity:0;border-radius:3px;
   box-shadow:0 0 0 1.5px rgba(255,214,92,.95),0 0 6px rgba(0,0,0,.4)}
@@ -1017,6 +1019,7 @@ body.panel-open .panel.settle{transition:height .34s var(--ease-out)!important}
       <button role="tab" data-tab="exposure" class="p-only"><span>Exp</span><small id="tvComp"></small></button>
       <button role="tab" data-tab="iso" class="p-only"><span>ISO</span><small id="tvIso"></small></button>
       <button role="tab" data-tab="screen" class="p-only"><span>Screen</span><small id="tvScr"></small></button>
+      <button role="tab" data-tab="settings"><span>Settings</span><small id="tvSet"></small></button>
     </div>
     </div>
     <div class="pbody">
@@ -1043,6 +1046,13 @@ body.panel-open .panel.settle{transition:height .34s var(--ease-out)!important}
       <div class="lab">Screen <i id="scrLab"></i></div>
       <div class="seg" id="scrSeg"></div>
       <p class="scrnote" id="scrNote"></p>
+    </div>
+    <div class="pane set" data-pane="settings">
+      <div class="lab">Sound <i id="sndLab"></i></div>
+      <div class="seg two" id="sndSeg" role="group" aria-label="Sound">
+        <button class="scr" data-snd="1" aria-pressed="true">On</button><button class="scr" data-snd="0" aria-pressed="false">Off</button>
+      </div>
+      <p class="scrnote">Shutter and film wind, recorded from a Nikon FE2.</p>
     </div>
       </div>
 </aside>
@@ -2177,7 +2187,7 @@ function applyTabs(){
   document.querySelectorAll('#tabs button').forEach(x=>{ const on=x.dataset.tab===cur; x.classList.toggle('on', on); x.setAttribute('aria-selected', on); x.tabIndex = on ? 0 : -1; });
   revealTab();
   document.querySelectorAll('.panel .pane').forEach(p=>{
-    const on = land ? (cur==='film' ? p.dataset.pane==='film' : p.classList.contains('ctl')) : p.dataset.pane===cur;
+    const on = land ? (cur==='film' || cur==='settings' ? p.dataset.pane===cur : p.classList.contains('ctl')) : p.dataset.pane===cur;
     p.classList.toggle('on', on);
   });
   const fo = document.querySelector('.film.on'); if(fo && cur==='film' && !document.body.classList.contains('panel-full')) fo.scrollIntoView({block:'nearest', inline:'center'});
@@ -2318,6 +2328,12 @@ window.addEventListener('pointerdown', ()=>{
   ensureAudio(); if(audioUnlocked||!actx) return;
   try{ const b=actx.createBuffer(1,1,22050), s=actx.createBufferSource(); s.buffer=b; s.connect(actx.destination); s.start(0); audioUnlocked=true; }catch(e){} }, {capture:true});
 try{ if(navigator.audioSession) navigator.audioSession.type='transient'; }catch(e){}
+let soundOn = true; try{ soundOn = localStorage.getItem('vignette.sound')!=='0'; }catch(e){}
+function syncSound(){ document.querySelectorAll('#sndSeg .scr').forEach(b=>{ const on=(b.dataset.snd==='1')===soundOn; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on); });
+  $('sndLab').textContent = soundOn ? 'On' : 'Off'; $('tvSet').textContent = soundOn ? 'Sound on' : 'Muted'; }
+document.querySelectorAll('#sndSeg .scr').forEach(b=>b.onclick=()=>{ soundOn = b.dataset.snd==='1'; try{ localStorage.setItem('vignette.sound', soundOn?'1':'0'); }catch(e){}
+  syncSound(); haptic(4); if(soundOn){ ensureAudio(); playShutter(1/250); } });
+syncSound();
 function ensureAudio(){ try{ if(!actx){ actx = new (window.AudioContext||window.webkitAudioContext)(); loadSfx(); } if(actx.state!=='running') actx.resume().catch(()=>{}); }catch(e){} }
 /* recorded sounds from a real Nikon FE2. Shutter: mirror up at 4ms, curtains at ~42/48ms, mirror return
    ~96-136ms; splitting at 45.5ms lets slow speeds and Bulb hold the shutter open between the curtains. */
@@ -2341,20 +2357,20 @@ function thump(t0, gain=.5){
   const o=actx.createOscillator(), g=actx.createGain(); o.frequency.setValueAtTime(140,t0); o.frequency.exponentialRampToValueAtTime(45,t0+.06);
   g.gain.setValueAtTime(gain,t0); g.gain.exponentialRampToValueAtTime(.001,t0+.08); o.connect(g).connect(actx.destination); o.start(t0); o.stop(t0+.1);
 }
-function soundOpen(at){ if(!actx) return; const n=at??actx.currentTime+.005;
+function soundOpen(at){ if(!actx || !soundOn) return; const n=at??actx.currentTime+.005;
   if(sfxReady('shutter')) return playClip(SFX.shutter, n, SH.start, SH.split);
   click(n,.03,2600,1.0); thump(n,.35); click(n+.012,.02,5200,.5); }
-function soundClose(at){ if(!actx) return; const n=at??actx.currentTime+.005;
+function soundClose(at){ if(!actx || !soundOn) return; const n=at??actx.currentTime+.005;
   if(sfxReady('shutter')) return playClip(SFX.shutter, n, SH.split, SH.end);
   click(n,.025,3400,.9); thump(n+.01,.4); click(n+.03,.04,1800,.4); }
-function playShutter(t){ if(!actx) return; const n=actx.currentTime+.005;
+function playShutter(t){ if(!actx || !soundOn) return; const n=actx.currentTime+.005;
   if(sfxReady('shutter')){ // as recorded up to 1/125; slower speeds hold the gap between the curtains
     if(t<=1/125) return playClip(SFX.shutter, n, SH.start, SH.end);
     soundOpen(n); soundClose(n+(SH.split-SH.start)+Math.min(t,8)); return; }
   soundOpen(n); soundClose(n+.02+Math.min(t,8)); }
-function playLoad(){ if(!actx) return; if(sfxReady('wind')) playClip(SFX.wind, actx.currentTime+.01, WIND.start, WIND.end); else playWind(); }
+function playLoad(){ if(!actx || !soundOn) return; if(sfxReady('wind')) playClip(SFX.wind, actx.currentTime+.01, WIND.start, WIND.end); else playWind(); }
 function playWind(){
-  if(!actx) return; const n=actx.currentTime+.02;
+  if(!actx || !soundOn) return; const n=actx.currentTime+.02;
   for(let i=0;i<9;i++) click(n+i*.028,.012,4200+Math.random()*900,.18,4);
 }
 
