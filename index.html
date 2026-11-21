@@ -294,6 +294,7 @@ body.panel-open .status .ic-open{display:none} body.panel-open .status .ic-close
 .scrnote{margin:8px 2px 0;color:var(--mute);font-size:12px;line-height:1.45}
 .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .seg.two{grid-template-columns:repeat(2,1fr)} .seg.two .scr{justify-content:center;height:34px}
+.seg.one{grid-template-columns:1fr} .seg.one .scr{justify-content:center;height:34px;touch-action:none;-webkit-touch-callout:none}   /* hold-to-preview: no scroll or callout while held */
 /* invisible 44px tap areas; the buttons look the same */
 #filmPill{position:relative} #filmPill::after{content:"";position:absolute;inset:-2px}   /* 44px wide when it stands vertical in landscape */
 .seg .scr{position:relative} .seg .scr::after{content:"";position:absolute;left:0;right:0;top:50%;height:max(100%,44px);transform:translateY(-50%)}
@@ -1037,6 +1038,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
       <div class="lensseg" id="lensSeg" hidden></div>
       <div class="lab">Aperture <i id="apLab"></i></div>
       <div class="dial" id="apDial"></div>
+      <div class="seg one"><button class="scr" id="dofBtn" aria-pressed="false" aria-label="Depth of field preview. Hold to stop the lens down.">Hold to preview <span id="dofAp"></span></button></div>
     </div>
     <div class="pane ctl" data-pane="exposure" id="paneExposure">
       <div class="lab">Exposure <i id="compLab">0</i></div>
@@ -1986,7 +1988,9 @@ function syncUI(){
   $('tvAp').textContent = fN(APERTURES[st.ap]); syncAp();
   $('lensLab').textContent = 'Nikkor '+st.lens.name+' '+st.lens.type;
   $('lensChipTxt').textContent = st.lens.name;
-  $('apLab').textContent = fN(APERTURES[st.ap]);
+  $('apLab').textContent = fN(APERTURES[st.ap]) + (st.dofPrev ? ' · preview' : '');
+  $('dofAp').textContent = fN(APERTURES[st.ap]);
+  $('dofBtn').classList.toggle('on', !!st.dofPrev); $('dofBtn').setAttribute('aria-pressed', !!st.dofPrev);
   $('tvComp').textContent = $('compLab').textContent;
   $('tvIso').textContent = st.isoSet;
   $('tvScr').textContent = st.screen;
@@ -2412,6 +2416,14 @@ let soundOn = true; try{ soundOn = localStorage.getItem('vignette.sound')!=='0';
 // 'transient' and 'ambient' are silenced by the switch. With sound off, stay ambient so the app never interrupts music.
 function syncAudioSession(){ try{ if(navigator.audioSession) navigator.audioSession.type = soundOn ? 'playback' : 'ambient'; }catch(e){} }
 syncAudioSession();
+// the FE2's stop-down lever: the finder normally shows the lens wide open; hold the button and it closes to the taking aperture
+st.dofPrev = false;
+{ const b=$('dofBtn'), set=on=>{ if(st.dofPrev===on) return; st.dofPrev=on; if(on) haptic(4); syncUI(); };
+  b.addEventListener('pointerdown', e=>{ e.preventDefault(); e.stopPropagation(); try{ b.setPointerCapture(e.pointerId); }catch(_){} set(true); });
+  ['pointerup','pointercancel','lostpointercapture'].forEach(t=>b.addEventListener(t, ()=>set(false)));
+  b.addEventListener('keydown', e=>{ if((e.key===' '||e.key==='Enter') && !e.repeat){ e.preventDefault(); set(true); } });
+  b.addEventListener('keyup', e=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); set(false); } });
+  b.addEventListener('blur', ()=>set(false)); b.addEventListener('contextmenu', e=>e.preventDefault()); }
 function syncSound(){ syncAudioSession(); document.querySelectorAll('#sndSeg .scr').forEach(b=>{ const on=(b.dataset.snd==='1')===soundOn; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on); });
   $('sndLab').textContent = soundOn ? 'On' : 'Off'; $('tvSet').textContent = soundOn ? 'Sound on' : 'Muted'; }
 document.querySelectorAll('#sndSeg .scr').forEach(b=>b.onclick=()=>{ soundOn = b.dataset.snd==='1'; try{ localStorage.setItem('vignette.sound', soundOn?'1':'0'); }catch(e){}
@@ -2823,9 +2835,12 @@ function loop(now){
       // live video changes every frame; a still source only needs a redraw when the exposure or a setting moves
       // (plus a slow refresh so anything not in the key still catches up)
       const key = st.srcKind==='video' ? '' : [canvas.width, canvas.height, m.expo.toFixed(3), st.stock.id, st.isoSet, st.ap, st.focus.toFixed(3),
-        st.screen, st.bypass, st.lens && st.lens.id, TARGET_INV].join('|');
+        st.screen, st.bypass, st.lens && st.lens.id, TARGET_INV, st.dofPrev].join('|');
       if(st.srcKind==='video' || key!==drawKey || st.source!==drawSrc || now-lastDraw>250){
-        draw(canvas.width, canvas.height, {expo:m.expo, seed: frameSeed, finder:true, N:APERTURES[0], bypass:st.bypass});
+        // stopped down, the finder shows the taking aperture's depth of field and gets darker, as through the real lever;
+        // the darkening stops at 3 stops so the finder stays usable at f/16
+        const fN0 = APERTURES[0], fNv = st.dofPrev ? APERTURES[st.ap] : fN0, dim = Math.min(3, 2*Math.log2(fNv/fN0));
+        draw(canvas.width, canvas.height, {expo:m.expo - dim, seed: frameSeed, finder:true, N:fNv, bypass:st.bypass});
         drawKey = key; drawSrc = st.source; lastDraw = now;
       }
     }
