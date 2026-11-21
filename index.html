@@ -1426,6 +1426,83 @@ function upload(src){
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
   gl.generateMipmap(gl.TEXTURE_2D);
 }
+/* ========================================================= long exposures
+   Film adds up light for as long as the shutter is open. In Bulb, and at timed speeds of 1/8 and slower, every new
+   camera frame goes into a running average (half float, so faint trails survive); a moving light leaves a streak and
+   anything still stays sharp. The average then goes through the film shader as if it were one frame, at the
+   exposure for the whole time the shutter was open. */
+const ACC = {on:false, n:0, w:0, h:0, last:-1, prog:null, U:{}, fmt:null, frame:null, t:[], fb:[]};
+const ACC_MAX = 2560;   // long side of the average; two half-float buffers at 4K are too much memory for a phone
+function accProgram(){
+  if(ACC.prog) return true;
+  try{
+    const ok = gl.getExtension('EXT_color_buffer_float') || gl.getExtension('EXT_color_buffer_half_float');
+    ACC.fmt = ok ? [gl.RGBA16F, gl.HALF_FLOAT] : [gl.RGBA8, gl.UNSIGNED_BYTE];
+    const sh = (type,src)=>{ const s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s); if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+    const p = gl.createProgram();
+    gl.attachShader(p, sh(gl.VERTEX_SHADER, `#version 300 es
+in vec2 p; out vec2 uv; void main(){ uv = p*.5+.5; gl_Position = vec4(p,0.,1.); }`));
+    gl.attachShader(p, sh(gl.FRAGMENT_SHADER, `#version 300 es
+precision highp float; in vec2 uv; out vec4 o; uniform sampler2D uPrev, uCur; uniform float uW;
+void main(){ o = vec4(mix(texture(uPrev,uv).rgb, texture(uCur,uv).rgb, uW), 1.); }`));
+    gl.bindAttribLocation(p, 0, 'p'); gl.linkProgram(p);
+    if(!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+    ['uPrev','uCur','uW'].forEach(k=>ACC.U[k]=gl.getUniformLocation(p,k));
+    ACC.prog = p; return true;
+  }catch(e){ console.warn(e); return false; }
+}
+function accTex(internal, type, w, h){
+  const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+  [[gl.TEXTURE_MIN_FILTER,gl.LINEAR],[gl.TEXTURE_MAG_FILTER,gl.LINEAR],[gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE],[gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE]].forEach(([k,v])=>gl.texParameteri(gl.TEXTURE_2D,k,v));
+  if(w) gl.texImage2D(gl.TEXTURE_2D, 0, internal, w, h, 0, gl.RGBA, type, null);
+  return t;
+}
+function accRestore(){ gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.useProgram(prog); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex); }
+// pass the shader the average in uPrev, a new frame in uCur, and how much of the new frame to take
+function accPass(target, prev, cur, w){
+  gl.bindFramebuffer(gl.FRAMEBUFFER, target); gl.viewport(0, 0, ACC.w, ACC.h); gl.useProgram(ACC.prog);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, prev); gl.uniform1i(ACC.U.uPrev, 0);
+  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, cur); gl.uniform1i(ACC.U.uCur, 1);
+  gl.uniform1f(ACC.U.uW, w); gl.drawArrays(gl.TRIANGLES, 0, 3);
+}
+function accStart(){
+  const v = st.video;
+  if(st.srcKind!=='video' || !v || v.readyState < 2 || !v.videoWidth || !accProgram()) return false;
+  const k = Math.min(1, ACC_MAX/Math.max(v.videoWidth, v.videoHeight));
+  ACC.w = Math.round(v.videoWidth*k); ACC.h = Math.round(v.videoHeight*k);
+  ACC.frame = accTex(gl.RGBA8, gl.UNSIGNED_BYTE, 0, 0);
+  ACC.t = [0,1].map(()=>accTex(ACC.fmt[0], ACC.fmt[1], ACC.w, ACC.h));
+  ACC.fb = ACC.t.map(t=>{ const f=gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, f); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0); return f; });
+  const complete = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
+  accRestore();
+  if(!complete){ accFree(); return false; }
+  ACC.n = 0; ACC.last = -1; ACC.on = true; accAdd();
+  return true;
+}
+function accAdd(){   // called every animation frame while the shutter is open; only new camera frames count
+  const v = st.video;
+  if(!ACC.on || !v || v.readyState < 2 || v.currentTime === ACC.last) return;
+  ACC.last = v.currentTime;
+  gl.bindTexture(gl.TEXTURE_2D, ACC.frame); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, v);
+  ACC.n++;
+  accPass(ACC.fb[1], ACC.t[0], ACC.frame, 1/ACC.n);   // running mean: the n-th frame counts 1/n
+  ACC.t.reverse(); ACC.fb.reverse();
+  accRestore();
+}
+// copy the average into the film shader's source texture; false if there was nothing to average
+function accFinish(){
+  if(!ACC.on) return false;
+  ACC.on = false;
+  if(!ACC.n){ accFree(); return false; }
+  gl.bindTexture(gl.TEXTURE_2D, tex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, ACC.w, ACC.h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+  const f = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, f); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+  accPass(f, ACC.t[0], ACC.t[0], 0);
+  gl.deleteFramebuffer(f); accRestore();
+  gl.generateMipmap(gl.TEXTURE_2D);
+  st.texW = ACC.w; st.texH = ACC.h;
+  accFree(); return true;
+}
+function accFree(){ ACC.on = false; [ACC.frame, ...ACC.t].forEach(t=>t && gl.deleteTexture(t)); ACC.fb.forEach(f=>gl.deleteFramebuffer(f)); ACC.frame = null; ACC.t = []; ACC.fb = []; }
 // approximate 35mm-equivalent focal length of the incoming picture
 const DESKTOP = matchMedia('(pointer: fine)').matches && !/Android|iPhone|iPad/i.test(navigator.userAgent);
 function srcFocal(){ if(st.srcKind==='video') return DESKTOP ? 46 : (st.facing==='user' ? 30 : 26); if(st.srcKind==='image' && st.srcLabel==='Photo') return 26; return 50; }
@@ -2388,6 +2465,7 @@ function bulbOpen(){
   if(st.roll.length - st.rollStart >= 36){ st.rollStart = st.roll.length; setCounter(1); toast('Roll finished. Loaded a fresh one.', 1800); }
   st.bulbStart = performance.now(); soundOpen(); haptic(10);
   shutterBtn.classList.add('full'); $('blackout').classList.add('on');
+  accStart();   // with the camera live, average every frame until release (a still photo has nothing to blur)
 }
 function bulbClose(){
   const t = Math.max(1/30, (performance.now() - st.bulbStart)/1000); st.bulbStart = 0; st.bulbT = t;
@@ -2396,15 +2474,19 @@ function bulbClose(){
 }
 
 async function fire(opt={}){
-  if(st.busy || !st.source) return;
+  if(st.busy || !st.source){ if(opt.bulb) accFree(); return; }
   if(!opt.bulb && st.roll.length - st.rollStart >= 36){ st.rollStart = st.roll.length; setCounter(1); toast('Roll finished. Loaded a fresh one.', 1800); }
   st.busy = true;
   const m = computeExposure();
   const N = APERTURES[st.ap];
   if(!opt.bulb){ shutterBtn.classList.add('full'); setTimeout(()=>shutterBtn.classList.remove('full'), 120); haptic(12); playShutter(m.t); }
   const bo = $('blackout'); bo.classList.add('on');
-  // render the frame at capture resolution while the mirror is up
-  if(st.srcKind==='video') upload(st.video);
+  // timed speeds of 1/8 and slower: keep the shutter open for the real time and average the frames, like Bulb
+  const timed = !opt.bulb && m.t >= 1/8 && accStart();
+  if(timed) await new Promise(r=>setTimeout(r, m.t*1000));
+  // render the frame at capture resolution while the mirror is up: the long-exposure average, or the current frame
+  const averaged = accFinish();
+  if(!averaged && st.srcKind==='video') upload(st.video);
   const [sw, sh] = srcSize();
   const A = cssW/cssH;
   // full camera resolution, cropped to the finder's shape (capped by what the GPU can render)
@@ -2427,7 +2509,7 @@ async function fire(opt={}){
     saveShot(shot); if(!st.busy) $('rollBtn').style.backgroundImage = `url(${shot.url})`;
   };
   try{ snap.toBlob(ready, 'image/jpeg', 0.92); }catch(e){ ready(null); }
-  const hold = opt.bulb ? 60 : Math.max(90, Math.min(m.t*1000, 1600));
+  const hold = opt.bulb || timed ? 60 : Math.max(90, Math.min(m.t*1000, 1600));   // a long exposure has already held the shutter open
   setTimeout(()=>{ bo.classList.remove('on'); }, hold);
   setTimeout(()=>{
     if(shot.url) $('rollBtn').style.backgroundImage = `url(${shot.url})`;
@@ -2731,6 +2813,8 @@ function loop(now){
   // the photo viewer and the welcome cover the finder completely: skip the upload, meter and shader until it shows again
   const covered = lbEl.classList.contains('on') || !introEl.classList.contains('off');
   if(covered){ requestAnimationFrame(loop); return; }
+  // shutter open on a long exposure: the mirror is up and the finder is dark, so the GPU only adds frames to the average
+  if(ACC.on){ accAdd(); requestAnimationFrame(loop); return; }
   if(st.source){
     if(st.srcKind==='video' && st.video.readyState >= 2) upload(previewSrc());
     sampleMeter(now);
