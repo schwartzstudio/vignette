@@ -37,6 +37,8 @@
   --bg-0:rgba(11,11,12,0); --bg-60:rgba(11,11,12,.6); --bg-90:rgba(11,11,12,.9); --bg-95:rgba(11,11,12,.95);
   --tile:var(--hl-04); --tile-line:var(--hl-08); --tile-on:var(--hl-12); --tile-line-on:var(--hl-28);
   --glass-blur:blur(30px) saturate(180%);
+  /* bottom inset: iOS reserves 34px for the home bar, but the bar itself is only the bottom ~13px, so controls can sit 16px lower */
+  --sab:max(0px, calc(env(safe-area-inset-bottom) - 16px));
   /* glass fills: see-through on purpose; the text colors on glass below carry the contrast */
   --glass-bg:rgba(24,24,26,.8); --glass-bg-desk:rgba(24,24,26,.72); --glass-bg-sheet:rgba(28,28,30,.66); --glass-bg-raised:rgba(36,36,38,.92); --glass-bg-pop:rgba(44,44,46,.82);
   /* text on glass: one step lighter than on the solid background, so labels stay readable through the tint */
@@ -79,7 +81,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   #status{display:none}
   .ctlbtn .ic-close{display:none} body.panel-open .ctlbtn .ic-open{display:none} body.panel-open .ctlbtn .ic-close{display:inline}
   body.panel-open .ctlbtn{background:var(--edge-soft)}
-  .shootwrap{padding:2px 14px calc(6px + env(safe-area-inset-bottom))}
+  .shootwrap{padding:2px 14px calc(6px + var(--sab))}
   .shootbar{max-width:none!important}
   .shutter{width:78px!important;height:78px!important}
   .tabs button{flex:none!important;min-width:0!important;width:96px;padding:0 6px!important;height:54px!important}
@@ -445,7 +447,7 @@ body.panel-full .grab::after{content:none}   /* the full sheet's handle is alrea
   .ob .lede{display:none}  .fan .fc.c{height:min(46dvh,260px)} .fan .fc.l,.fan .fc.r{height:min(38dvh,214px)} .perms{margin-top:14px;gap:10px;grid-template-columns:1fr 1fr;max-width:640px}
 }
 /* ===== photo viewer */
-.lightbox{display:flex;justify-content:flex-start;gap:0;padding:calc(10px + env(safe-area-inset-top)) 0 calc(14px + env(safe-area-inset-bottom));
+.lightbox{display:flex;justify-content:flex-start;gap:0;padding:calc(10px + env(safe-area-inset-top)) 0 calc(14px + var(--sab));
   opacity:0;visibility:hidden;transition:opacity .22s,visibility 0s .22s}
 .lightbox.on{opacity:1;visibility:visible;transition:opacity .22s}
 .lb-top{width:100%;display:grid;grid-template-columns:52px 1fr 52px;align-items:center;gap:12px;padding:0 16px;flex:none}
@@ -578,7 +580,7 @@ html,body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none}
 @keyframes fanC{from{transform:translate(-50%,-50%) scale(.94);opacity:0}to{transform:translate(-50%,-50%);opacity:1}}
 @keyframes fanL{from{transform:translate(-50%,-50%) scale(.9) rotate(0);opacity:0}30%{opacity:1}to{transform:translate(-112%,-47%) rotate(-4deg);opacity:1}}
 @keyframes fanR{from{transform:translate(-50%,-50%) scale(.9) rotate(0);opacity:0}30%{opacity:1}to{transform:translate(12%,-47%) rotate(4deg);opacity:1}}
-.ob{padding-bottom:max(12px, env(safe-area-inset-bottom))}
+.ob{padding-bottom:max(12px, calc(6px + var(--sab)))}
 .ob .bot{gap:12px}
 
 /* ===== focus bar, round 4 */
@@ -614,7 +616,7 @@ html,body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none}
 }
 
 /* ===== Liquid Glass sheets: inset, rounded all round, translucent and blurred */
-.sheet{left:8px!important;right:8px!important;bottom:calc(8px + env(safe-area-inset-bottom))!important;padding-bottom:6px;border-radius:30px;border:0;
+.sheet{left:8px!important;right:8px!important;bottom:calc(8px + var(--sab))!important;padding-bottom:6px;border-radius:30px;border:0;
   background:var(--glass-bg-sheet)!important;-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
   box-shadow:var(--glass-edge),0 20px 50px var(--shade-50);
   transform:translateY(calc(100% + 30px))!important;overflow:hidden}
@@ -625,7 +627,7 @@ html,body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none}
 .rollgrid{background:transparent!important}
 /* ===== phones: the controls float as a glass card over the shutter row and grow out of the controls button */
 @media (orientation:portrait){
-  .panel{left:8px!important;right:8px!important;bottom:calc(8px + env(safe-area-inset-bottom))!important;border-radius:30px;border:0;
+  .panel{left:8px!important;right:8px!important;bottom:calc(8px + var(--sab))!important;border-radius:30px;border:0;
     background:var(--glass-bg)!important;-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
     box-shadow:var(--glass-edge),0 20px 50px var(--shade-50);
     padding:6px 14px 8px;z-index:25;overflow:hidden;
@@ -822,7 +824,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .lb-info dt{color:var(--mute);font-size:15px}
 .lb-info dd{margin:0;color:var(--ink);font-size:15px;text-align:right}
 .lightbox{position:fixed}
-.lb-confirm{position:absolute;right:max(16px, calc(50% - 210px));bottom:calc(92px + env(safe-area-inset-bottom));z-index:5;width:250px;padding:16px 16px 12px;border-radius:24px;text-align:center;
+.lb-confirm{position:absolute;right:max(16px, calc(50% - 210px));bottom:calc(92px + var(--sab));z-index:5;width:250px;padding:16px 16px 12px;border-radius:24px;text-align:center;
   background:var(--glass-bg-pop);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
   box-shadow:var(--glass-edge),0 18px 44px var(--shade-50);
   transform-origin:calc(100% - 30px) 100%;transform:scale(.4);opacity:0;visibility:hidden;pointer-events:none;
@@ -842,7 +844,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .lightbox{--H:300px;--p:0px;overflow:hidden}
 .lightbox.info{--p:var(--H)}
 .lb-stage{transform:translateY(calc(-1 * var(--p)));transition:transform .34s var(--ease-out)}
-.lb-info{position:absolute;left:0;right:0;bottom:0;max-height:none!important;z-index:6;padding-bottom:calc(12px + env(safe-area-inset-bottom));
+.lb-info{position:absolute;left:0;right:0;bottom:0;max-height:none!important;z-index:6;padding-bottom:calc(12px + var(--sab));
   transform:translateY(calc(100% - var(--p)));transition:transform .34s var(--ease-out);pointer-events:none}
 .lightbox.info .lb-info,.lightbox.idrag .lb-info{pointer-events:auto}
 .lightbox.idrag .lb-stage,.lightbox.idrag .lb-info{transition:none}
