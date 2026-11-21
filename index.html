@@ -74,7 +74,6 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .focusH.over::before{content:"";position:absolute;left:0;top:0;bottom:0;width:58px;z-index:2;pointer-events:none;background:linear-gradient(90deg,var(--bg-95) 0 38px,var(--bg-0))}
 .focusH.over .unitbtn{z-index:3}
 @media (orientation:portrait){
-  .top{padding:calc(6px + env(safe-area-inset-top)) 14px 6px!important}
   .top .lenschip{margin-left:0}
   .top .brand{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}   /* hidden on phones but still the page heading for screen readers */
   #status{display:none}
@@ -88,7 +87,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   .tabs button[data-tab=exposure],.tabs button[data-tab=iso]{width:76px}
   .tabs button small{max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis}
   #app{grid-template-areas:"top" "stage" "shoot";grid-template-rows:auto minmax(0,1fr) auto!important}
-  .top{padding:6px 12px!important;border-bottom:0}
+  /* below the status bar and Dynamic Island when it runs full screen from the home screen (inset is 0 in Safari) */
+  .top{padding:calc(6px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) 6px calc(12px + env(safe-area-inset-left))!important;border-bottom:0}
   .stage{padding:4px 6px 6px!important;gap:6px!important}
   .finder{padding:0!important;background:none!important}
   .stage{padding:2px 6px 4px!important;gap:0!important}
@@ -372,7 +372,7 @@ body.panel-full .grab::after{content:none}   /* the full sheet's handle is alrea
 /* intro */
 .intro{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--bg);background-image:radial-gradient(ellipse at 50% 38%,color-mix(in srgb,var(--raise) 25%,transparent),color-mix(in srgb,var(--black) 85%,transparent) 80%),var(--leather,none);background-size:auto,150px 150px}
 .intro.off{display:none}
-.toast{position:fixed;left:50%;top:64px;transform:translate(-50%,-10px);background:var(--raise);border:1px solid var(--edge-soft);color:var(--ink);padding:10px 14px;border-radius:10px;font-size:13px;
+.toast{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top));transform:translate(-50%,-10px);background:var(--raise);border:1px solid var(--edge-soft);color:var(--ink);padding:10px 14px;border-radius:10px;font-size:13px;
   opacity:0;transition:.25s;z-index:50;pointer-events:none;max-width:90vw;text-align:center}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 .hide{display:none}
@@ -2328,9 +2328,12 @@ window.addEventListener('pointerdown', ()=>{
   if(audioStale && actx){ try{ actx.close(); }catch(e){} actx=null; audioUnlocked=false; audioStale=false; }
   ensureAudio(); if(audioUnlocked||!actx) return;
   try{ const b=actx.createBuffer(1,1,22050), s=actx.createBufferSource(); s.buffer=b; s.connect(actx.destination); s.start(0); audioUnlocked=true; }catch(e){} }, {capture:true});
-try{ if(navigator.audioSession) navigator.audioSession.type='transient'; }catch(e){}
 let soundOn = true; try{ soundOn = localStorage.getItem('vignette.sound')!=='0'; }catch(e){}
-function syncSound(){ document.querySelectorAll('#sndSeg .scr').forEach(b=>{ const on=(b.dataset.snd==='1')===soundOn; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on); });
+// iOS: 'playback' sounds follow the volume buttons and ignore the silent switch (the in-app Sound setting is the mute);
+// 'transient' and 'ambient' are silenced by the switch. With sound off, stay ambient so the app never interrupts music.
+function syncAudioSession(){ try{ if(navigator.audioSession) navigator.audioSession.type = soundOn ? 'playback' : 'ambient'; }catch(e){} }
+syncAudioSession();
+function syncSound(){ syncAudioSession(); document.querySelectorAll('#sndSeg .scr').forEach(b=>{ const on=(b.dataset.snd==='1')===soundOn; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on); });
   $('sndLab').textContent = soundOn ? 'On' : 'Off'; $('tvSet').textContent = soundOn ? 'Sound on' : 'Muted'; }
 document.querySelectorAll('#sndSeg .scr').forEach(b=>b.onclick=()=>{ soundOn = b.dataset.snd==='1'; try{ localStorage.setItem('vignette.sound', soundOn?'1':'0'); }catch(e){}
   syncSound(); haptic(4);
