@@ -1206,7 +1206,7 @@ const BASE = {
   bw:   {xu:[0,0,0], xo:[0,0,0], toe:1.0, sh:.88, black:[.03,.03,.03],  white:[.95,.95,.95],  gchroma:0,   hal:0,   halC:[1,1,1],    bloom:.03, vig:.14}
 };
 const S = (o)=>Object.assign({gsharp:.15,wb:[1,1,1],mat:null,c:1,chanC:[1,1,1],chanOff:[0,0,0],sat:1,shT:[0,0,0],hiT:[0,0,0],grain:.03,gsize:1,bw:[.27,.6,.13]}, BASE[o.type], o);
-const SHORT = {c200:'Fujicolor 200',cs800t:'800T',cs50d:'50D',cs400d:'400D',
+const SHORT = {c200:'Fujicolor 200',proimage100:'Pro Image 100',phoenix2:'Phoenix II',cs800t:'800T',cs50d:'50D',cs400d:'400D',
   lomopurple:'Purple',lomoturq:'Turquoise',lomometro:'Metropolis',lomo100:'Lomo 100',lomo400:'Lomo 400',lomo800:'Lomo 800',
   e100:'E100',provia100f:'Provia 100F',tmax3200:'P3200',ladygrey:'Lady Grey'};
 const STOCKS = [
@@ -1225,8 +1225,14 @@ const STOCKS = [
      c:1,sat:1.04,wb:[1.06,1.03,.9],hiT:[.02,.018,-.02],shT:[0,.006,0],grain:.04,gsize:1.15,black:[.045,.045,.045]}),
   S({id:'ultramax400',xu:[-0.005, 0.02, -0.02],xo:[0.02, 0.012, -0.025],type:'neg',maker:'Kodak',name:'UltraMax 400',iso:400,box:['#f9c21a','#2156a5','#141414'],note:'Warm, saturated everyday film. Grainier than the 200s, likes extra light.',
      c:1.08,sat:1.2,wb:[1.06,1.01,.9],hiT:[.02,.01,-.02],grain:.04,gsize:1.15}),
-  S({id:'c200',xu:[-0.02, 0.045, 0],xo:[-0.01, 0.015, 0.01],type:'neg',maker:'Fujifilm',name:'Fujicolor 200',iso:200,box:['#11a35f','#f4f4f2','#fff'],note:'Budget Fuji. Cool tones with greens creeping into the shadows.',
-     c:1,sat:1,wb:[.98,1.02,1.01],shT:[-.01,.012,.01],black:[.04,.05,.05],grain:.04,gsize:1.1}),
+  S({id:'c200',xu:[-0.005, 0.02, -0.02],xo:[0.02, 0.012, -0.025],type:'neg',maker:'Fujifilm',name:'Fujicolor 200',iso:200,box:['#11a35f','#f4f4f2','#fff'],note:'Fuji’s current 200, made in the USA. Warm and bright, close to Kodak Gold.',
+     c:1.03,sat:1.1,wb:[1.07,1.02,.9],chanC:[1,1.02,.96],hiT:[.024,.014,-.026],grain:.034,gsize:1.1}),
+  S({id:'fuji400',xu:[-0.005, 0.02, -0.02],xo:[0.02, 0.012, -0.025],type:'neg',maker:'Fujifilm',name:'400',iso:400,box:['#11a35f','#d9262b','#fff'],note:'Fuji’s current 400, made in the USA. Warm everyday color with visible grain, close to UltraMax.',
+     c:1.07,sat:1.15,wb:[1.05,1.01,.91],hiT:[.018,.01,-.018],grain:.042,gsize:1.15}),
+  S({id:'proimage100',xu:[-0.01, 0.02, -0.01],xo:[0.015, 0.01, -0.02],type:'neg',maker:'Kodak',name:'Pro Image 100',iso:100,box:['#f2f2f2','#d9262b','#141414'],note:'Warm, fine grained everyday film made for portraits in sunny climates.',
+     c:1.02,sat:1.06,wb:[1.05,1,.93],chanOff:[.03,0,-.02],hiT:[.016,.01,-.014],grain:.02,gsize:.9}),
+  S({id:'phoenix2',xu:[-0.02, 0.01, 0.03],xo:[0.025, 0, -0.02],type:'neg',maker:'Harman',name:'Phoenix II 200',iso:200,box:['#e8611a','#141414','#fff'],note:'Harman’s second color film. Warm and characterful, with grain and a red glow around highlights.',
+     c:1.1,sat:1.1,wb:[1.06,.99,.92],chanOff:[.06,-.02,-.02],hiT:[.02,.006,-.016],shT:[-.004,0,.01],hal:.35,halC:[1,.3,.1],grain:.05,gsize:1.25,gsharp:.35}),
   S({id:'cs800t',xu:[-0.03, 0.015, 0.03],xo:[0.02, 0, -0.01],type:'neg',maker:'CineStill',name:'800T',iso:800,box:['#d9262b','#f1f1f1','#fff'],note:'Tungsten balanced cine film. Red halation glow around lights, made for night.',
      c:1,sat:1.05,wb:[.82,.95,1.18],hal:.95,halC:[1,.22,.08],bloom:.07,grain:.045,gsize:1.2}),
   S({id:'cs50d',type:'neg',maker:'CineStill',name:'50D',iso:50,box:['#2c63c2','#f1f1f1','#fff'],note:'Daylight cine stock with ultra fine grain. Clean, sharp and saturated.',
@@ -1273,6 +1279,20 @@ const STOCKS = [
      c:1.2,bw:[0,.42,.58],grain:.02,gsize:.85}),
   S({id:'doublex',type:'bw',maker:'Kodak',name:'Double-X 5222',iso:250,box:['#2a2a2a','#d9d9d9','#fff'],note:'Kodak cine stock with a vintage tonality. Also sold as BwXX.',
      c:1.2,bw:[.3,.55,.15],grain:.055,gsize:1.25,gsharp:.5}),
+  S({id:'tmax400',type:'bw',maker:'Kodak',name:'T-Max 400',iso:400,box:['#f9c21a','#4b4f55','#141414'],note:'Sharp, fine grained 400 with tabular grain. Clean and modern.',
+     c:1.12,bw:[.27,.58,.15],grain:.032,gsize:1.05,gsharp:.1}),
+  S({id:'delta100',type:'bw',maker:'Ilford',name:'Delta 100',iso:100,box:['#f4f4f2','#3a7fc4','#141414','#141414'],note:'Ilford’s finest grain film. Very sharp with smooth, rich tones.',
+     c:1.08,bw:[.28,.57,.15],grain:.013,gsize:.75,gsharp:.05}),
+  S({id:'delta400',type:'bw',maker:'Ilford',name:'Delta 400',iso:400,box:['#f4f4f2','#e0a83a','#141414','#141414'],note:'Fine grain for a 400. Crisper and cleaner than HP5.',
+     c:1.05,bw:[.29,.56,.15],grain:.034,gsize:1.05,gsharp:.15}),
+  S({id:'xp2',type:'bw',maker:'Ilford',name:'XP2 Super',iso:400,box:['#f4f4f2','#d9262b','#141414','#141414'],note:'Black and white developed in color chemistry. Creamy, near grainless and very forgiving.',
+     c:.9,toe:.9,sh:.8,bw:[.28,.55,.17],grain:.018,gsize:.95,gsharp:0,black:[.045,.045,.045]}),
+  S({id:'kentmere200',type:'bw',maker:'Kentmere',name:'Pan 200',iso:200,box:['#f2f2ef','#3c9a4a','#141414'],note:'Harman’s newest budget film. Contrasty with well controlled grain.',
+     c:1.15,bw:[.29,.56,.15],grain:.04,gsize:1.1,gsharp:.4}),
+  S({id:'kentmere400',type:'bw',maker:'Kentmere',name:'Pan 400',iso:400,box:['#f2f2ef','#d9262b','#141414'],note:'Affordable 400 with softer contrast and visible grain. A student favorite.',
+     c:.92,bw:[.29,.56,.15],grain:.055,gsize:1.25,gsharp:.35,black:[.045,.045,.045]}),
+  S({id:'fomapan200',type:'bw',maker:'Foma',name:'Fomapan 200',iso:200,box:['#f2f2ef','#2a8a3a','#2a8a3a'],note:'Foma’s middle speed film. Classic tones with a little more grain than 100.',
+     c:1.08,bw:[.3,.55,.15],grain:.035,gsize:1.05,gsharp:.35}),
   S({id:'fomapan100',type:'bw',maker:'Foma',name:'Fomapan 100',iso:100,box:['#f2f2ef','#1a5fa8','#1a5fa8'],note:'Affordable Czech film with a traditional, old school look.',
      c:1.15,bw:[.3,.55,.15],grain:.04,gsize:1.05,gsharp:.4}),
 ];
