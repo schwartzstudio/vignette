@@ -1029,6 +1029,11 @@ body:has(#lensSheet.on, #infoSheet.on) .shootwrap{visibility:hidden}
 .irow dt{color:var(--mute);font-size:13px;line-height:1.35}
 .irow dd{margin:0;font-size:14px;line-height:1.35;color:var(--ink);display:flex;flex-direction:column;gap:3px}
 .irow dd small{font:400 11px/1.2 var(--mono);color:#6b6964;letter-spacing:0}
+.isl{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;margin:6px 0 2px;font-size:11px;line-height:1;color:var(--mute)}
+.itrack{position:relative;height:4px;border-radius:2px;background:rgba(255,255,255,.12)}
+.itrack .ifill{position:absolute;top:0;bottom:0;border-radius:2px;background:rgba(235,232,225,.55)}
+.itrack .imid{position:absolute;top:-3px;bottom:-3px;width:1px;margin-left:-.5px;background:rgba(255,255,255,.35)}
+.itrack .ithumb{position:absolute;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.5)}
 .ifine{margin:16px 0 0;font-size:12.5px;line-height:1.45;color:var(--mute)}
 </style>
 </head>
@@ -2244,15 +2249,30 @@ function hueName(v){
 }
 function tintText(v){ const n = hueName(v); if(!n) return 'Neutral'; const m=Math.max(...v.map(Math.abs)); return `${n[0].toUpperCase()+n.slice(1)}, ${m>.02?'strong':m>.01?'moderate':'subtle'}`; }
 function level(v, steps){ return steps.find(x=>v<=x[0])[1]; }
+// each slider spans the range used across every stock in the app, so a film reads against the others
+const blackOf = s => (s.black[0]+s.black[1]+s.black[2])/3;
+const warmOf = s => s.wb[0]-s.wb[2], tintOf = s => s.wb[1]-(s.wb[0]+s.wb[2])/2;
+function sl(get, s, lo, hi, mid, onlyType){
+  const pool = STOCKS.filter(x=>!onlyType || x.type===onlyType || (onlyType==='color' && x.type!=='bw')).map(get);
+  let a = Math.min(...pool), b = Math.max(...pool);
+  if(mid!=null){ const r = Math.max(Math.abs(a-mid), Math.abs(b-mid)) || 1; a = mid-r; b = mid+r; }
+  const pad = (b-a)*.04 || 1; a -= pad; b += pad;
+  return {v:get(s), a, b, mid, lo, hi};
+}
+function sliderHTML(q){
+  const P = v => Math.max(0, Math.min(100, (v-q.a)/(q.b-q.a)*100));
+  const p = P(q.v), m = q.mid!=null ? P(q.mid) : 0;
+  return `<div class="isl" aria-hidden="true"><span>${q.lo}</span><div class="itrack">${q.mid!=null?`<i class="imid" style="left:${m}%"></i>`:''}<i class="ifill" style="left:${Math.min(m,p)}%;width:${Math.abs(p-m)}%"></i><i class="ithumb" style="left:${p}%"></i></div><span>${q.hi}</span></div>`;
+}
 function filmRecipe(s){
-  const rows = [], bw = s.type==='bw';
-  rows.push(['Box speed', 'ISO '+s.iso, null]);
-  rows.push(['Contrast', s.c===1?'Standard':pct(s.c-1), 'c '+num(s.c)]);
-  if(!bw) rows.push(['Saturation', s.sat===1?'Standard':pct(s.sat-1), 'sat '+num(s.sat)]);
+  const rows = [], bw = s.type==='bw', C = bw ? 'bw' : 'color';
+  rows.push(['Box speed', 'ISO '+s.iso, null, sl(x=>Math.log2(x.iso), s, 'Slow', 'Fast')]);
+  rows.push(['Contrast', s.c===1?'Standard':pct(s.c-1), 'c '+num(s.c), sl(x=>x.c, s, 'Flat', 'Punchy', 1)]);
+  if(!bw) rows.push(['Saturation', s.sat===1?'Standard':pct(s.sat-1), 'sat '+num(s.sat), sl(x=>x.sat, s, 'Muted', 'Vivid', 1, 'color')]);
   if(!bw){
-    const warm = s.wb[0]-s.wb[2], tint = s.wb[1]-(s.wb[0]+s.wb[2])/2;
-    rows.push(['White balance', Math.abs(warm)<.005 ? 'Neutral' : `${warm>0?'Warm':'Cool'} ${Math.round(Math.abs(warm)*100)}`, 'wb '+s.wb.map(x=>num(x)).join(' ')]);
-    if(Math.abs(tint)>.005) rows.push(['Tint', `${tint>0?'Green':'Magenta'} ${Math.round(Math.abs(tint)*100)}`, null]);
+    const warm = warmOf(s), tint = tintOf(s);
+    rows.push(['White balance', Math.abs(warm)<.005 ? 'Neutral' : `${warm>0?'Warm':'Cool'} ${Math.round(Math.abs(warm)*100)}`, 'wb '+s.wb.map(x=>num(x)).join(' '), sl(warmOf, s, 'Cool', 'Warm', 0, 'color')]);
+    rows.push(['Tint', Math.abs(tint)<=.005 ? 'Neutral' : `${tint>0?'Green':'Magenta'} ${Math.round(Math.abs(tint)*100)}`, null, sl(tintOf, s, 'Magenta', 'Green', 0, 'color')]);
     rows.push(['Shadow tone', tintText(s.shT), 'shT '+s.shT.map(x=>num(x,3)).join(' ')]);
     rows.push(['Highlight tone', tintText(s.hiT), 'hiT '+s.hiT.map(x=>num(x,3)).join(' ')]);
     if(s.mat) rows.push(['Color shift', 'Channels remixed', 'matrix']);
@@ -2260,16 +2280,17 @@ function filmRecipe(s){
     const [r,g,b] = s.bw;
     rows.push(['Color response', `Red ${Math.round(r*100)} · Green ${Math.round(g*100)} · Blue ${Math.round(b*100)}`, 'bw mix']);
   }
-  const blk = (s.black[0]+s.black[1]+s.black[2])/3;
-  rows.push(['Blacks', blk<.01?'Deep':blk<.04?'Slightly lifted':'Faded', 'black '+num(blk,3)]);
-  rows.push(['Shadow rolloff', s.toe>1.05?'Hard':s.toe<.95?'Soft':'Standard', 'toe '+num(s.toe)]);
-  rows.push(['Highlight rolloff', s.sh>1?'Hard, clips early':s.sh<.86?'Gentle, holds highlights':'Standard', 'shoulder '+num(s.sh)]);
-  rows.push(['Grain', `${level(s.grain,[[.012,'Very fine'],[.025,'Fine'],[.042,'Medium'],[.07,'Visible'],[1,'Heavy']])}, ${s.gsize<.9?'small':s.gsize>1.25?'large':'medium'} size`, 'grain '+num(s.grain,3)+' · size '+num(s.gsize)]);
-  rows.push(['Grain character', s.gsharp>=.5?'Sharp, clumpy':s.gsharp>=.25?'Crisp':'Smooth', 'sharp '+num(s.gsharp)]);
-  if(!bw) rows.push(['Grain color', s.gchroma>=.3?'Some color noise':'Mostly mono', 'chroma '+num(s.gchroma)]);
-  rows.push(['Halation', s.hal<.02?'None':s.hal<.15?'Faint':s.hal<.5?'Moderate':'Strong red glow', 'hal '+num(s.hal)]);
-  rows.push(['Bloom', s.bloom<.035?'Light':s.bloom<.06?'Moderate':'Strong', 'bloom '+num(s.bloom)]);
-  rows.push(['Vignette', s.vig<.13?'Light':s.vig<.17?'Moderate':'Noticeable', 'vig '+num(s.vig)]);
+  const blk = blackOf(s);
+  rows.push(['Blacks', blk<.01?'Deep':blk<.04?'Slightly lifted':'Faded', 'black '+num(blk,3), sl(blackOf, s, 'Deep', 'Faded')]);
+  rows.push(['Shadow rolloff', s.toe>1.05?'Hard':s.toe<.95?'Soft':'Standard', 'toe '+num(s.toe), sl(x=>x.toe, s, 'Soft', 'Hard', 1)]);
+  rows.push(['Highlight rolloff', s.sh>1?'Hard, clips early':s.sh<.86?'Gentle, holds highlights':'Standard', 'shoulder '+num(s.sh), sl(x=>x.sh, s, 'Gentle', 'Hard')]);
+  rows.push(['Grain', level(s.grain,[[.012,'Very fine'],[.025,'Fine'],[.042,'Medium'],[.07,'Visible'],[1,'Heavy']]), 'grain '+num(s.grain,3), sl(x=>x.grain, s, 'Fine', 'Heavy')]);
+  rows.push(['Grain size', s.gsize<.9?'Small':s.gsize>1.25?'Large':'Medium', 'size '+num(s.gsize), sl(x=>x.gsize, s, 'Small', 'Large')]);
+  rows.push(['Grain character', s.gsharp>=.5?'Sharp, clumpy':s.gsharp>=.25?'Crisp':'Smooth', 'sharp '+num(s.gsharp), sl(x=>x.gsharp, s, 'Smooth', 'Sharp')]);
+  if(!bw) rows.push(['Grain color', s.gchroma>=.3?'Some color noise':'Mostly mono', 'chroma '+num(s.gchroma), sl(x=>x.gchroma, s, 'Mono', 'Color', null, 'color')]);
+  rows.push(['Halation', s.hal<.02?'None':s.hal<.15?'Faint':s.hal<.5?'Moderate':'Strong red glow', 'hal '+num(s.hal), sl(x=>x.hal, s, 'None', 'Strong')]);
+  rows.push(['Bloom', s.bloom<.035?'Light':s.bloom<.06?'Moderate':'Strong', 'bloom '+num(s.bloom), sl(x=>x.bloom, s, 'Light', 'Strong')]);
+  rows.push(['Vignette', s.vig<.13?'Light':s.vig<.17?'Moderate':'Noticeable', 'vig '+num(s.vig), sl(x=>x.vig, s, 'Light', 'Strong')]);
   if(!bw){
     const u = hueName(s.xu), o = hueName(s.xo);
     if(u) rows.push(['Underexposed', 'Drifts '+u, 'xu']);
@@ -2293,7 +2314,7 @@ $('infoBack').onclick = ()=>{ const b = infoReturn; infoReturn = null; const I =
   closeSheets(); if(b) b(); };
 function showFilmInfo(s, fromSheet){
   if(s.none){ openInfo('No film', `<div class="ihead"><div class="ittl"><small>Digital</small><b>No film</b></div></div><p class="inote">The straight, unprocessed picture from the camera. No curve, color, grain or halation is applied.</p>`); return; }
-  const rows = filmRecipe(s).map(([k,v,raw])=>`<div class="irow"><dt>${k}</dt><dd>${v}${raw?`<small>${raw}</small>`:''}</dd></div>`).join('');
+  const rows = filmRecipe(s).map(([k,v,raw,q])=>`<div class="irow"><dt>${k}</dt><dd>${v}${q?sliderHTML(q):''}${raw?`<small>${raw}</small>`:''}</dd></div>`).join('');
   openInfo('Film', `<div class="ihead"><div class="box ibox"></div><div class="ittl"><small>${s.maker}</small><b>${s.name}</b><span>${GROUPS[s.type]} · ISO ${s.iso}</span></div></div>
     <p class="inote">${s.note}</p>
     <h3 class="isec">Vignette recipe</h3><dl class="ispec">${rows}</dl>
