@@ -1206,7 +1206,7 @@ const BASE = {
   bw:   {xu:[0,0,0], xo:[0,0,0], toe:1.0, sh:.88, black:[.03,.03,.03],  white:[.95,.95,.95],  gchroma:0,   hal:0,   halC:[1,1,1],    bloom:.03, vig:.14}
 };
 const S = (o)=>Object.assign({gsharp:.15,wb:[1,1,1],mat:null,c:1,chanC:[1,1,1],chanOff:[0,0,0],sat:1,shT:[0,0,0],hiT:[0,0,0],grain:.03,gsize:1,bw:[.27,.6,.13]}, BASE[o.type], o);
-const SHORT = {proimage100:'Pro Image 100',phoenix:'Phoenix 125',phoenix2:'Phoenix II',cs800t:'800T',cs50d:'50D',cs400d:'400D',
+const SHORT = {proimage100:'Pro Image 100',phoenix:'Phoenix 125',phoenix2:'Phoenix II',azure:'Switch Azure',color92:'Color ’92',cs800t:'800T',cs50d:'50D',cs400d:'400D',
   lomopurple:'Purple',lomoturq:'Turquoise',lomometro:'Metropolis',lomo100:'Lomo 100',lomo400:'Lomo 400',lomo800:'Lomo 800',
   e100:'E100',provia100f:'Provia 100F',tmax3200:'P3200',ladygrey:'Lady Grey'};
 const STOCKS = [
@@ -1235,6 +1235,12 @@ const STOCKS = [
      c:1.22,sat:1.18,wb:[1.08,.98,.88],chanC:[1.06,1,.96],chanOff:[.08,-.02,-.04],hiT:[.026,.008,-.02],shT:[-.006,-.004,.014],hal:.75,halC:[1,.26,.08],bloom:.06,grain:.072,gsize:1.4,gsharp:.45}),
   S({id:'phoenix2',xu:[-0.02, 0.01, 0.03],xo:[0.025, 0, -0.02],type:'neg',maker:'Harman',name:'Phoenix II 200',iso:200,box:['#f0a23a','#141414','#fff'],note:'Harman’s second generation color film. Calmer than the original, with finer grain and more normal color.',
      c:1.08,sat:1.08,wb:[1.05,.99,.93],chanOff:[.05,-.01,-.02],hiT:[.018,.006,-.014],shT:[-.004,0,.01],hal:.3,halC:[1,.3,.1],grain:.045,gsize:1.2,gsharp:.3}),
+  S({id:'azure',type:'neg',maker:'Harman',name:'Switch Azure 125',iso:125,box:['#1e8fd6','#f08a24','#fff'],note:'Color switching film. Blues turn orange, yellows turn azure and reds go purple, with heavy halation.',
+     mat:[.15,0,1.15, 0,.55,.55, .75,.5,0],c:1.08,sat:1.4,hal:.6,halC:[1,.4,.2],bloom:.05,grain:.02,gsize:.85}),
+  S({id:'color92',xu:[-0.01, 0.02, -0.02],xo:[0.02, 0.012, -0.025],type:'neg',maker:'Lomography',name:'LomoChrome Color ’92',iso:400,box:['#e2a13a','#c43b2a','#fff'],note:'A nostalgic 90s snapshot look. Warm, slightly faded color with visible grain.',
+     c:.98,sat:1.05,wb:[1.08,1.01,.9],hiT:[.022,.012,-.02],shT:[0,.006,.01],black:[.05,.05,.055],hal:.15,grain:.05,gsize:1.2,gsharp:.3}),
+  S({id:'redscale',type:'neg',maker:'Lomography',name:'Redscale XR',iso:100,box:['#b3231f','#141414','#fff'],note:'Film loaded back to front, shot through the base. Everything glows red, orange and yellow.',
+     mat:[.75,.45,.15, .18,.26,.05, .03,.04,.02],wb:[1.1,.92,.8],c:1.08,sat:1.25,black:[.03,.01,0],grain:.045,gsize:1.15}),
   S({id:'cs800t',xu:[-0.03, 0.015, 0.03],xo:[0.02, 0, -0.01],type:'neg',maker:'CineStill',name:'800T',iso:800,box:['#d9262b','#f1f1f1','#fff'],note:'Tungsten balanced cine film. Red halation glow around lights, made for night.',
      c:1,sat:1.05,wb:[.82,.95,1.18],hal:.95,halC:[1,.22,.08],bloom:.07,grain:.045,gsize:1.2}),
   S({id:'cs50d',type:'neg',maker:'CineStill',name:'50D',iso:50,box:['#2c63c2','#f1f1f1','#fff'],note:'Daylight cine stock with ultra fine grain. Clean, sharp and saturated.',
@@ -1273,6 +1279,12 @@ const STOCKS = [
      c:1.04,bw:[.32,.53,.15],grain:.1,gsize:1.6,gsharp:.5,black:[.055,.055,.055]}),
   S({id:'fp4',type:'bw',maker:'Ilford',name:'FP4 Plus',iso:125,box:['#f4f4f2','#2f7ac2','#141414','#141414'],note:'Classic medium speed film. Fine cubic grain and smooth tones.',
      c:1.05,bw:[.28,.57,.15],grain:.026,gsize:.95,gsharp:.3}),
+  S({id:'earlgrey',type:'bw',maker:'Lomography',name:'Earl Grey 100',iso:100,box:['#3c3c40','#e6e6e6','#fff'],note:'Fine grained black and white with deep blacks and strong contrast.',
+     c:1.18,bw:[.28,.57,.15],grain:.022,gsize:.85,gsharp:.3}),
+  S({id:'berlinkino',type:'bw',maker:'Lomography',name:'Berlin Kino 400',iso:400,box:['#202022','#d9d9d9','#fff'],note:'Black and white cine film with a wide tonal range and soft, classic contrast.',
+     c:.95,bw:[.28,.57,.15],grain:.045,gsize:1.15,gsharp:.35}),
+  S({id:'potsdamkino',type:'bw',maker:'Lomography',name:'Potsdam Kino 100',iso:100,box:['#5a5a5e','#e6e6e6','#fff'],note:'Slow cine film with fine grain and smooth, delicate tones.',
+     c:1.05,bw:[.29,.56,.15],grain:.018,gsize:.8,gsharp:.15}),
   S({id:'ladygrey',type:'bw',maker:'Lomography',name:'Lady Grey 400',iso:400,box:['#8c8c90','#141414','#fff'],note:'Everyday black and white with classic contrast and moderate grain.',
      c:1.08,bw:[.29,.57,.14],grain:.05,gsize:1.2,gsharp:.4}),
   S({id:'panf50',type:'bw',maker:'Ilford',name:'Pan F Plus',iso:50,box:['#f4f4f2','#e0a83a','#141414','#141414'],note:'Slow, very fine grained and punchy. Wants lots of light.',
