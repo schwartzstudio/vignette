@@ -1207,7 +1207,7 @@ const BASE = {
 };
 const S = (o)=>Object.assign({gsharp:.15,wb:[1,1,1],mat:null,c:1,chanC:[1,1,1],chanOff:[0,0,0],sat:1,shT:[0,0,0],hiT:[0,0,0],grain:.03,gsize:1,bw:[.27,.6,.13]}, BASE[o.type], o);
 const SHORT = {proimage100:'Pro Image 100',phoenix:'Phoenix 125',phoenix2:'Phoenix II',azure:'Switch Azure',color92:'Color ’92',cs800t:'800T',cs50d:'50D',cs400d:'400D',
-  lomopurple:'Purple',lomoturq:'Turquoise',lomometro:'Metropolis',lomo100:'Lomo 100',lomo400:'Lomo 400',lomo800:'Lomo 800',
+  lomopurple:'Purple',lomoturq:'Turquoise',lomometro:'Metropolis',lomo100:'Lomo 100',lomo400:'Lomo 400',lomo800:'Lomo 800',classicolor:'Classicolor',
   e100:'E100',provia100f:'Provia 100F',tmax3200:'P3200',ladygrey:'Lady Grey'};
 const STOCKS = [
   // color negative
@@ -1237,6 +1237,8 @@ const STOCKS = [
      c:1.08,sat:1.08,wb:[1.05,.99,.93],chanOff:[.05,-.01,-.02],hiT:[.018,.006,-.014],shT:[-.004,0,.01],hal:.3,halC:[1,.3,.1],grain:.045,gsize:1.2,gsharp:.3}),
   S({id:'azure',type:'neg',maker:'Harman',name:'Switch Azure 125',iso:125,box:['#1e8fd6','#f08a24','#fff'],note:'Color switching film. Blues turn orange, yellows turn azure and reds go purple, with heavy halation.',
      mat:[.15,0,1.15, 0,.55,.55, .75,.5,0],c:1.08,sat:1.4,hal:.6,halC:[1,.4,.2],bloom:.05,grain:.02,gsize:.85}),
+  S({id:'classicolor',xu:[-0.01, 0.02, 0.01],xo:[0.015, 0.008, -0.015],type:'neg',maker:'Lomography',name:'LomoChrome Classicolor 200',iso:200,box:['#2f6f9e','#e8c547','#fff'],note:'Quietly vibrant everyday color with natural tones and a classic analog feel.',
+     c:1,sat:1.06,wb:[1.03,1,.96],hiT:[.012,.008,-.01],shT:[-.004,.002,.008],hal:.08,grain:.03,gsize:1.05}),
   S({id:'color92',xu:[-0.01, 0.02, -0.02],xo:[0.02, 0.012, -0.025],type:'neg',maker:'Lomography',name:'LomoChrome Color ’92',iso:400,box:['#e2a13a','#c43b2a','#fff'],note:'A nostalgic 90s snapshot look. Warm, slightly faded color with visible grain.',
      c:.98,sat:1.05,wb:[1.08,1.01,.9],hiT:[.022,.012,-.02],shT:[0,.006,.01],black:[.05,.05,.055],hal:.15,grain:.05,gsize:1.2,gsharp:.3}),
   S({id:'redscale',type:'neg',maker:'Lomography',name:'Redscale XR',iso:100,box:['#b3231f','#141414','#fff'],note:'Film loaded back to front, shot through the base. Everything glows red, orange and yellow.',
