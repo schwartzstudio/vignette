@@ -995,16 +995,18 @@ body.panel-full .film .finfo:active{background:rgba(255,255,255,.18)}
   .focusH.over::before{width:96px!important;background:linear-gradient(90deg,rgba(0,0,0,.82) 0 52px,rgba(0,0,0,0))!important}
   .focusH.over::after{width:120px!important;background:linear-gradient(270deg,rgba(0,0,0,.82) 0 76px,rgba(0,0,0,0))!important}
 }
+/* full height sheets cover the shutter row; keep it from showing through the glass */
+body:has(#lensSheet.on, #infoSheet.on) .shootwrap{visibility:hidden}
 /* ===== lens list with info buttons ===== */
 .lensitem{position:relative}
-.lensitem .lensrow{padding-right:56px}
+.lensitem .lensrow{padding-right:50px}
 .lensitem .infobtn{position:absolute;right:8px;top:50%;margin-top:-18px;background:rgba(255,255,255,.06);color:var(--mute)}
 .lensitem .infobtn:active{background:rgba(255,255,255,.14);color:var(--ink)}
 /* ===== info sheet ===== */
 .infosheet .body{padding:4px 20px 22px!important}
-.sheet.infosheet{top:calc(8px + env(safe-area-inset-top))!important;max-height:none!important;display:flex;flex-direction:column}
-.sheet.infosheet .body{flex:1 1 auto;min-height:0;overflow:auto}
-@media (min-width:900px){ .sheet.infosheet{top:5vh!important} }
+.sheet.infosheet,#lensSheet{top:calc(8px + env(safe-area-inset-top))!important;max-height:none!important;display:flex;flex-direction:column}
+.sheet.infosheet .body,#lensSheet .body{flex:1 1 auto;min-height:0;overflow:auto}
+@media (min-width:900px){ .sheet.infosheet,#lensSheet{top:5vh!important} }
 .ihead{display:flex;align-items:center;gap:16px;margin:4px 0 14px}
 .ihead .ibox{width:92px;height:66px;border-radius:3px}
 .ihead .ibox::after{font-size:22px;left:8px;top:calc(8px + var(--tb,0px))}
