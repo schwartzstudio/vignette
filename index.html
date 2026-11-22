@@ -1287,6 +1287,10 @@ const STOCKS = [
      c:.95,bw:[.28,.57,.15],grain:.045,gsize:1.15,gsharp:.35}),
   S({id:'potsdamkino',type:'bw',maker:'Lomography',name:'Potsdam Kino 100',iso:100,box:['#5a5a5e','#e6e6e6','#fff'],note:'Slow cine film with fine grain and smooth, delicate tones.',
      c:1.05,bw:[.29,.56,.15],grain:.018,gsize:.8,gsharp:.15}),
+  S({id:'fantome',type:'bw',maker:'Lomography',name:'Fantôme Kino 8',iso:8,box:['#d4cfc6','#3a3a3c','#b07a3e'],note:'Ultra slow cine film with bold contrast, deep blacks and very fine grain. Wants bright light.',
+     c:1.32,sh:.92,bw:[.3,.56,.14],grain:.012,gsize:.7,gsharp:.2,black:[.015,.015,.015]}),
+  S({id:'babylon',type:'bw',maker:'Lomography',name:'Babylon Kino 13',iso:13,box:['#f3dede','#3a3a3c','#c47a4e'],note:'Very slow cine film with high contrast, fine grain and a nuanced, classic tonality.',
+     c:1.22,bw:[.29,.57,.14],grain:.014,gsize:.72,gsharp:.15,black:[.02,.02,.02]}),
   S({id:'ladygrey',type:'bw',maker:'Lomography',name:'Lady Grey 400',iso:400,box:['#8c8c90','#141414','#fff'],note:'Everyday black and white with classic contrast and moderate grain.',
      c:1.08,bw:[.29,.57,.14],grain:.05,gsize:1.2,gsharp:.4}),
   S({id:'panf50',type:'bw',maker:'Ilford',name:'Pan F Plus',iso:50,box:['#f4f4f2','#e0a83a','#141414','#141414'],note:'Slow, very fine grained and punchy. Wants lots of light.',
@@ -1349,7 +1353,9 @@ const AP_COLOR = {5.6:'green', 11:'red', 16:'yellow', 22:'blue'};  // Nikkor dep
 const COMP = [-2,-5/3,-4/3,-1,-2/3,-1/3,0,1/3,2/3,1,4/3,5/3,2];
 const COMP_L = ['−2','·','·','−1','·','·','0','·','·','+1','·','·','+2'];
 // the FE2's film speed dial: 12 to 3200 in third stops, numbers on the full stops
-const ISOS = [12,16,20,25,32,40,50,64,80,100,125,160,200,250,320,400,500,640,800,1000,1250,1600,2000,2500,3200];
+// odd box speeds (Babylon Kino 13) sit on the nearest dial mark
+const isoIdx = v => ISOS.reduce((b,n,i)=>Math.abs(Math.log(n/v))<Math.abs(Math.log(ISOS[b]/v))?i:b, 0);
+const ISOS = [6,8,10,12,16,20,25,32,40,50,64,80,100,125,160,200,250,320,400,500,640,800,1000,1250,1600,2000,2500,3200];
 const ISO_PRINTED = [12,25,50,100,200,400,800,1600,3200];
 const SCREENS = ['K2','B2','E2'];
 const SCREEN_INFO = {
@@ -2079,7 +2085,7 @@ function buildDials(){
   shutDial = new Dial($('shutDial'), {items:SPEEDS, value:st.speed, unit:44, label:'Shutter speed', fmt:i=>{ const x=SPEEDS[i]; return x.mode==='A' ? 'Auto' : x.mode==='B' ? 'Bulb' : x.mode==='M250' ? 'Mechanical 1/250 second' : x.t>=0.95 ? x.l+(x.t===1?' second':' seconds') : '1/'+x.l+' second'; }, onChange:i=>{st.speed=i; wake(); syncUI();}});
   buildApDial();
   compDial = new Dial($('compDial'), {items:COMP_L.map((l,i)=>({l, cls: i%3? 'third':''})), value:st.comp, unit:22, tick:22, label:'Exposure compensation', fmt:i=>{ const t=i-6, w=Math.trunc(t/3), r=Math.abs(t%3); return (t>0?'+':t<0?'−':'')+(Math.abs(w)||(r?'':'0'))+(w&&r?' ':'')+(r?r+'/3':'')+' EV'; }, onChange:i=>{st.comp=i; wake(); syncUI();}});
-  isoDial = new Dial($('isoDial'), {items:ISOS.map(n=>({l: ISO_PRINTED.includes(n) ? String(n) : '', cls: (n===100||n===400)?'red':''})), value:ISOS.indexOf(st.isoSet), unit:24, tick:24, label:'Film speed', fmt:i=>'ISO '+ISOS[i], onChange:i=>{st.isoSet=ISOS[i]; wake(); syncUI();}});
+  isoDial = new Dial($('isoDial'), {items:ISOS.map(n=>({l: ISO_PRINTED.includes(n) ? String(n) : '', cls: (n===100||n===400)?'red':''})), value:isoIdx(st.isoSet), unit:24, tick:24, label:'Film speed', fmt:i=>'ISO '+ISOS[i], onChange:i=>{st.isoSet=ISOS[i]; wake(); syncUI();}});
   buildFocusDials();
 }
 // drag on the finder turns the focus ring
@@ -2119,7 +2125,7 @@ function syncUI(){
   { const a=Math.abs(push), stops=`${a%1?a.toFixed(1):a} stop${a>1?'s':''}`;
     $('isoLab').innerHTML = st.stock.none ? `ISO ${st.isoSet}` : push===0 ? `<b class="ok">At box speed</b> · ISO ${st.stock.iso}`
       : `<b class="${push>0?'push':'pull'}">${push>0?'Push':'Pull'} ${stops}</b> · box ISO ${st.stock.iso}`; }
-  if(isoDial) isoDial.els.forEach((e,i)=>e.classList.toggle('boxspd', !st.stock.none && ISOS[i]===st.stock.iso));
+  if(isoDial) isoDial.els.forEach((e,i)=>e.classList.toggle('boxspd', !st.stock.none && i===isoIdx(st.stock.iso)));
   $('scrLab').textContent = 'Type '+st.screen;
   $('scrNote').textContent = SCREEN_INFO[st.screen];
   const sp = SPEEDS[st.speed];
@@ -2249,7 +2255,7 @@ function buildFilmList(){
 function loadFilm(s){
   if(s===st.stock) return;
   st.stock = s; st.rollStart = st.roll.length; wake();
-  if(!s.none){ st.isoSet = s.iso; const k = ISOS.indexOf(s.iso); if(isoDial && k>=0){ isoDial.pos=k; isoDial.last=k; isoDial.apply(); } }
+  if(!s.none){ st.isoSet = s.iso; const k = isoIdx(s.iso); if(isoDial && k>=0){ isoDial.pos=k; isoDial.last=k; isoDial.apply(); } }
   document.querySelectorAll('.film').forEach(b=>b.classList.toggle('on', b.dataset.id===s.id));
   syncUI(); ensureAudio(); if(!s.none){ playLoad(); toast(`Loaded ${s.maker} ${s.name}. ISO ${s.iso}.`, 1600); }
 }
