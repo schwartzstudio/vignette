@@ -969,6 +969,59 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-duration:.01ms!important;transition-delay:0s!important;scroll-behavior:auto!important}
 }
+/* ===== full view finder (portrait): the whole lens view, dimmed, with the photo area framed ===== */
+.fmarks{position:absolute;pointer-events:none;z-index:2;display:none}
+.fmarks{box-shadow:inset 0 0 0 2px rgba(242,240,234,.94)}
+.fmarks i{display:none}
+.infobtn{width:36px;height:36px;flex:none;border-radius:50%;display:grid;place-items:center;color:var(--ink)}
+.infobtn svg{width:20px;height:20px}
+.film .finfo{display:none}
+/* full height film sheet: full-width cards, an info button in place of the speed */
+body.panel-full #filmList{width:100%!important;flex:1 1 auto;align-self:stretch}
+body.panel-full .film .iso{display:none!important}
+body.panel-full .film .finfo{display:grid;place-items:center;flex:none;position:relative;margin-left:auto;width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,.08);color:var(--ink)}
+body.panel-full .film .finfo::after{content:"";position:absolute;inset:-6px}
+body.panel-full .film .finfo svg{width:20px;height:20px}
+body.panel-full .film .finfo:active{background:rgba(255,255,255,.18)}
+
+@media (orientation:portrait){
+  .stage{padding:0!important;gap:0!important;position:relative;background:#000}
+  .view{display:block!important;position:relative;width:100%;height:100%;flex:1 1 auto}
+  .finder{position:absolute!important;left:0;top:0;padding:0!important}
+  .screen{box-shadow:none!important}
+  .fmarks{display:block}
+  .focusH.over{background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.28))!important;border-radius:0!important}
+  .focusH.over::before{width:96px!important;background:linear-gradient(90deg,rgba(0,0,0,.82) 0 52px,rgba(0,0,0,0))!important}
+  .focusH.over::after{width:120px!important;background:linear-gradient(270deg,rgba(0,0,0,.82) 0 76px,rgba(0,0,0,0))!important}
+}
+/* ===== lens list with info buttons ===== */
+.lensitem{position:relative}
+.lensitem .lensrow{padding-right:56px}
+.lensitem .infobtn{position:absolute;right:8px;top:50%;margin-top:-18px;background:rgba(255,255,255,.06);color:var(--mute)}
+.lensitem .infobtn:active{background:rgba(255,255,255,.14);color:var(--ink)}
+/* ===== info sheet ===== */
+.infosheet .body{padding:4px 20px 22px!important}
+.sheet.infosheet{top:calc(8px + env(safe-area-inset-top))!important;max-height:none!important;display:flex;flex-direction:column}
+.sheet.infosheet .body{flex:1 1 auto;min-height:0;overflow:auto}
+@media (min-width:900px){ .sheet.infosheet{top:5vh!important} }
+.ihead{display:flex;align-items:center;gap:16px;margin:4px 0 14px}
+.ihead .ibox{width:92px;height:66px;border-radius:3px}
+.ihead .ibox::after{font-size:22px;left:8px;top:calc(8px + var(--tb,0px))}
+.ihead .iart{width:92px;display:flex;justify-content:center;color:var(--ink)}
+.ihead .iart svg{width:auto;height:96px}
+.ittl{display:flex;flex-direction:column;gap:4px;min-width:0}
+.ittl small{font:500 12px/1 Inter,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.ittl b{font:600 26px/1.05 var(--num);letter-spacing:.02em;color:var(--ink)}
+.ittl span{font-size:13px;line-height:1.35;color:var(--mute)}
+.inote{margin:0 0 16px;font-size:15px;line-height:1.45;color:var(--ink)}
+.isec{margin:18px 0 6px;font:500 11px/1 Inter,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.ispec{margin:0;display:grid}
+.irow{display:grid;grid-template-columns:132px 1fr;gap:12px;padding:11px 0;border-top:1px solid rgba(255,255,255,.07)}
+.irow dt{color:var(--mute);font-size:13px;line-height:1.35}
+.irow dd{margin:0;font-size:14px;line-height:1.35;color:var(--ink);display:flex;flex-direction:column;gap:3px}
+.irow dd small{font:400 11px/1.2 var(--mono);color:#6b6964;letter-spacing:0}
+.ifine{margin:16px 0 0;font-size:12.5px;line-height:1.45;color:var(--mute)}
 </style>
 </head>
 <body>
@@ -991,6 +1044,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
         <div class="screen" id="screen" role="img" aria-label="Viewfinder">
           <canvas id="gl"></canvas>
           <svg id="overlay"></svg>
+          <div class="fmarks" id="fmarks" aria-hidden="true"></div>
           <div class="blackout" id="blackout"></div>
           <div class="af" id="af"></div>
         </div>
@@ -1067,6 +1121,10 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 <div class="sheet" id="lensSheet" role="dialog" aria-modal="true" aria-labelledby="lensTitle">
   <header><span></span><h2 id="lensTitle">Lens</h2><button class="xbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button></header>
   <div class="body"><div id="lensList" style="display:grid;gap:6px;padding:0 6px 10px"></div></div>
+</div>
+<div class="sheet infosheet" id="infoSheet" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+  <header><button class="xbtn" id="infoBack" aria-label="Back" style="visibility:hidden"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="infoTitle">About</h2><button class="xbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button></header>
+  <div class="body" id="infoBody"></div>
 </div>
 <div class="sheet" id="rollSheet" role="dialog" aria-modal="true" aria-labelledby="rollTitle">
   <header><span></span><h2 id="rollTitle">Roll</h2><button class="xbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button></header>
@@ -1215,6 +1273,11 @@ const STOCKS = [
   S({id:'fomapan100',type:'bw',maker:'Foma',name:'Fomapan 100',iso:100,box:['#f2f2ef','#1a5fa8','#1a5fa8'],note:'Affordable Czech film with a traditional, old school look.',
      c:1.15,bw:[.3,.55,.15],grain:.04,gsize:1.05,gsharp:.4}),
 ];
+// within each group: by maker (mainstream first), then film speed
+const MAKER_RANK = ['Kodak','Fujifilm','Ilford'];   // mainstream makers first, the rest alphabetical
+const makerRank = m => { const i = MAKER_RANK.indexOf(m); return i < 0 ? MAKER_RANK.length : i; };
+STOCKS.sort((a,b)=>makerRank(a.maker)-makerRank(b.maker) || a.maker.localeCompare(b.maker) || a.iso-b.iso || a.name.localeCompare(b.name));
+const DEF_STOCK = STOCKS.find(s=>s.id==='portra400');
 
 const SPEEDS = [
   {l:'A',mode:'A'},
@@ -1236,11 +1299,14 @@ const LENSES = [
   {id:'85-2',  name:'85mm ƒ/2',   type:'AI-S',f:85, clicks:[2,2.8,4,5.6,8,11,16,22], printed:[2,2.8,4,5.6,8,11,16,22], minM:0.85, years:'1981 to 1995', serial:'270001 to 358019', d:64, len:58, seg:{hood:0,front:10,focus:18,dist:11,dof:3,ap:10,mount:6}},
   {id:'105-25',name:'105mm ƒ/2.5',type:'AI-S',f:105,clicks:[2.5,2.8,4,5.6,8,11,16,22], printed:[2.5,4,5.6,8,11,16,22], minM:1.0, years:'1981 to 2005', serial:'890001 to 1053938', d:64, len:78, seg:{hood:20,front:6,focus:20,dist:13,dof:3,ap:10,mount:6}},
 ];
+// widest to longest, fastest first when two lenses share a focal length
+LENSES.sort((a,b)=>a.f-b.f || a.clicks[0]-b.clicks[0]);
+const DEF_LENS = LENSES.find(L=>L.id==='50-18');
 const MOUNT_NOTE = {
   'AI':'AI, Automatic Indexing (1977): a ridge on the aperture ring tells the meter your f-stop.',
   'AI-S':'AI-S (1981): AI plus a standardized aperture lever for shutter priority and program bodies. Works the same on the FE2.'
 };
-let APERTURES = LENSES[0].clicks;
+let APERTURES = DEF_LENS.clicks;
 const fN = n => `ƒ/${n}`;
 const AP_COLOR = {5.6:'green', 11:'red', 16:'yellow', 22:'blue'};  // Nikkor depth-of-field color coding on the ring
 const COMP = [-2,-5/3,-4/3,-1,-2/3,-1/3,0,1/3,2/3,1,4/3,5/3,2];
@@ -1261,7 +1327,7 @@ let FOCUS_MAX_INV = 1/0.45; let TARGET_INV = 1/3; // subject at 3 m, moved by ta
 
 /* ========================================================= state */
 const st = {
-  stock: STOCKS[1], speed: 0, ap: 4, lens: LENSES[0], comp: 6, isoSet: 400, baseEV: 11, focus: 12, screen: 'K2', // focus dial units 0..12 (12 = infinity)
+  stock: DEF_STOCK, speed: 0, ap: 4, lens: DEF_LENS, comp: 6, isoSet: 400, baseEV: 11, focus: 12, screen: 'K2', // focus dial units 0..12 (12 = infinity)
   source: null, srcKind: null, facing: 'environment', video: null, img: null,
   avgLin: .18, metered: {t:1/125, expo:0, needleT:1/125},
   half: false, meterUntil: 0, needle: 1.12, needleV: 0,
@@ -1288,7 +1354,8 @@ const FS = `#version 300 es
 precision highp float;
 precision highp int;
 uniform sampler2D uTex;
-uniform vec2 uOut, uCrop, uCenter;
+uniform vec2 uOut, uCrop, uCenter, uOff;
+uniform float uDim;
 uniform float uMirror, uSrcPerOut, uExpo, uC, uToe, uSh, uSat, uGrain, uGSize, uGChroma, uGSharp, uHal, uBloom, uHalLod, uVig;
 uniform float uFinder, uR, uErr, uBlur, uBypass, uNeg;
 uniform int uBW;
@@ -1331,8 +1398,9 @@ float curve(float x, float c, float toe, float sh){
   return 0.5 + 0.5*tanh(x*c*k);
 }
 void main(){
-  vec2 fc = gl_FragCoord.xy;
+  vec2 fc = gl_FragCoord.xy - uOff;
   vec2 uv = fc/uOut;
+  vec2 uc = clamp(uv, 0.0, 1.0);
   float minO = min(uOut.x, uOut.y);
   vec2 off = vec2(0.0);
   float aid = 0.0;
@@ -1391,13 +1459,18 @@ void main(){
     if(uBW == 0){ nv += uGChroma*vec3(grain(gp+31.7, uSeed+1u), grain(gp+71.3, uSeed+2u), grain(gp+11.9, uSeed+3u)); }
     float boost = 1.0 + max(-uExpo, 0.0)*0.35 - uNeg*min(max(uExpo, 0.0), 3.0)*0.07;
     col += nv * uGrain * boost * (0.3 + 2.8*l*(1.0-l));
-    col *= 1.0 - uVig*pow(length(uv-0.5)*1.35, 2.5);
+    col *= 1.0 - uVig*pow(length(uc-0.5)*1.35, 2.5);
   }
   if(uFinder > 0.5){
     col *= 1.0 + (ih(ivec2(fc), 0u) - 0.5)*(uScreen == 0 ? 0.035 : 0.05);
-    col *= 1.0 - 0.28*pow(length(uv-0.5)*1.25, 3.0);
+    col *= 1.0 - 0.28*pow(length(uc-0.5)*1.25, 3.0);
     col *= 1.0 - aid;
   }
+  // outside the photo area: the rest of what the lens sees, dimmed; black past the edge of the sensor
+  vec2 sp = crop(uv);
+  float inSrc = step(0.0,sp.x)*step(sp.x,1.0)*step(0.0,sp.y)*step(sp.y,1.0);
+  float inF = step(0.0,uv.x)*step(uv.x,1.0)*step(0.0,uv.y)*step(uv.y,1.0);
+  col *= inSrc * mix(uDim, 1.0, inF);
   o = vec4(clamp(col, 0.0, 1.0), 1.0);
 }`;
 let prog, U = {}, tex;
@@ -1516,7 +1589,7 @@ function srcSize(){
 const IDENT = [1,0,0,0,1,0,0,0,1];
 function transpose3(m){ return [m[0],m[3],m[6],m[1],m[4],m[7],m[2],m[5],m[8]]; }
 function draw(w, h, opt){
-  const s0 = st.stock.none ? STOCKS[1] : st.stock;
+  const s0 = st.stock.none ? DEF_STOCK : st.stock;
   // push / pull processing: rating the film faster or slower than box speed
   const push = st.stock.none ? 0 : Math.log2(st.isoSet/st.stock.iso);
   const s = Object.assign({}, s0, {none: st.stock.none,
@@ -1528,8 +1601,10 @@ function draw(w, h, opt){
   const crop = (srcA > outA ? [outA/srcA, 1] : [1, srcA/outA]).map(v=>v/zoom);
   const srcPerOut = (sw*crop[0])/w;
   const minO = Math.min(w,h);
-  gl.viewport(0,0,w,h);
+  gl.viewport(0,0,opt.vw||w,opt.vh||h);
   gl.uniform2f(U.uOut, w, h);
+  gl.uniform2f(U.uOff, opt.ox||0, opt.oy||0);
+  gl.uniform1f(U.uDim, 0.36);
   gl.uniform2f(U.uCrop, crop[0], crop[1]);
   gl.uniform1f(U.uMirror, st.facing==='user' && st.srcKind==='video' ? 1 : 0);
   gl.uniform1f(U.uSrcPerOut, srcPerOut);
@@ -1700,33 +1775,63 @@ function buildOverlay(w, h){
 /* ========================================================= layout */
 const finder = $('finder'), screen = $('screen'), stage = $('stage'), view = $('view');
 let cssW = 300, cssH = 200, dpr = 1;
+let FX = 0, FY = 0, VW = 300, VH = 200;
+const INFO_ROW = 0, FOCUS_H = 60, TOP_MIN = 10;
+function liveDraw(opt){
+  const fw = Math.round(cssW*dpr), fh = Math.round(cssH*dpr);
+  draw(fw, fh, Object.assign(opt, {vw:canvas.width, vh:canvas.height, ox:Math.round(FX*dpr), oy:canvas.height - Math.round(FY*dpr) - fh}));
+}
+function placeFrameEls(x, y, w, h){
+  for(const el of [$('overlay'), $('fmarks')]){ el.style.left=x+'px'; el.style.top=y+'px'; el.style.width=w+'px'; el.style.height=h+'px'; }
+}
 function layout(){
   const land = matchMedia('(orientation: landscape)').matches;
   st.portrait = !land;
-  document.documentElement.style.setProperty('--shootH', ($('app').querySelector('.shootwrap').offsetHeight||100)+'px');
+  const sw = document.querySelector('.shootwrap');
+  document.documentElement.style.setProperty('--shootH', (sw.offsetHeight||100)+'px');
   const r = view.getBoundingClientRect();
-  const cs = getComputedStyle(finder);
-  const pl=parseFloat(cs.paddingLeft), pr=parseFloat(cs.paddingRight), pt=parseFloat(cs.paddingTop), pb=parseFloat(cs.paddingBottom);
-  const A = land ? 3/2 : 2/3;
-  const availW = r.width - (land ? 64 : 0), availH = r.height;
-  let w = Math.min(availW - pl - pr, (availH - pt - pb)*A);
-  w = Math.max(120, w); const h = w/A;
-  cssW = Math.round(w); cssH = Math.round(h);
-  screen.style.width = cssW+'px'; screen.style.height = cssH+'px';
-  $('focusV').style.height = cssH+'px';
   const fh = $('focusH'), mt = finder.querySelector('.meter');
-  if(!land){
-    if(fh.parentNode!==finder) finder.appendChild(fh);
-    fh.classList.add('over'); fh.style.left='0px'; fh.style.width=cssW+'px'; fh.style.bottom='0px';
-    mt.style.left='0px'; mt.style.top='0px'; mt.style.bottom='60px';
-  } else {
-    if(fh.parentNode===finder) view.after(fh);
-    fh.classList.remove('over'); fh.style.left=fh.style.width=fh.style.bottom='';
-    mt.style.left=(pl-23)+'px'; mt.style.top=pt+'px'; mt.style.bottom=pb+'px';
-  }
   dpr = Math.min(window.devicePixelRatio||1, 2);
-  canvas.width = Math.round(cssW*dpr); canvas.height = Math.round(cssH*dpr);
-  buildMeter(land ? cssH : cssH - 60);
+  if(!land){
+    // the whole view is live; the photo area is the largest 2:3 frame that leaves room for the focus scale and the info row
+    VW = Math.round(r.width); VH = Math.round(r.height);
+    const avail = VH - INFO_ROW - FOCUS_H - TOP_MIN;
+    let w = Math.floor(Math.min(VW, avail*2/3)); w = Math.max(120, w);
+    const h = Math.round(w*1.5);
+    cssW = w; cssH = h;
+    // centered, but nudged right when that lets the meter sit outside the frame
+    const MW = mt.offsetWidth || 22;
+    FX = Math.round((VW - w)/2);
+    if(FX < MW && VW - w >= MW) FX = MW;
+    FY = Math.max(TOP_MIN, VH - INFO_ROW - FOCUS_H - h);   // spare height goes above the frame, under the status bar
+    finder.style.width = VW+'px'; finder.style.height = VH+'px';
+    screen.style.width = VW+'px'; screen.style.height = VH+'px';
+    placeFrameEls(FX, FY, w, h);
+    if(fh.parentNode!==finder) finder.appendChild(fh);
+    fh.classList.add('over'); fh.style.left=FX+'px'; fh.style.width=w+'px'; fh.style.top=(FY+h)+'px'; fh.style.bottom='';
+    // the meter strip sits just outside the frame's left edge when there's room, otherwise inside it
+    mt.style.left=(FX >= MW ? FX - MW : FX)+'px'; mt.style.top=FY+'px'; mt.style.bottom=(VH-FY-h)+'px';
+    canvas.width = Math.round(VW*dpr); canvas.height = Math.round(VH*dpr);
+    buildMeter(h);
+  } else {
+    const cs = getComputedStyle(finder);
+    const pl=parseFloat(cs.paddingLeft), pr=parseFloat(cs.paddingRight), pt=parseFloat(cs.paddingTop), pb=parseFloat(cs.paddingBottom);
+    const A = 3/2;
+    const availW = r.width - 64, availH = r.height;
+    let w = Math.min(availW - pl - pr, (availH - pt - pb)*A);
+    w = Math.max(120, w); const h = w/A;
+    cssW = Math.round(w); cssH = Math.round(h);
+    FX = 0; FY = 0; VW = cssW; VH = cssH;
+    finder.style.width = finder.style.height = '';
+    screen.style.width = cssW+'px'; screen.style.height = cssH+'px';
+    placeFrameEls(0, 0, cssW, cssH);
+    $('focusV').style.height = cssH+'px';
+    if(fh.parentNode===finder) view.after(fh);
+    fh.classList.remove('over'); fh.style.left=fh.style.width=fh.style.bottom=fh.style.top='';
+    mt.style.left=(pl-23)+'px'; mt.style.top=pt+'px'; mt.style.bottom=pb+'px';
+    canvas.width = Math.round(cssW*dpr); canvas.height = Math.round(cssH*dpr);
+    buildMeter(cssH);
+  }
   buildOverlay(cssW, cssH);
   applyTabs();
   focusH && focusH.apply(); updateADR();
@@ -1883,9 +1988,10 @@ function lensDrawing(L){
   return `<svg class="lensart" viewBox="0 0 ${(W+6).toFixed(0)} ${(y+2).toFixed(0)}" width="${(W+6).toFixed(0)}" height="${(y+2).toFixed(0)}" fill="none" stroke="currentColor" stroke-width=".9">${g}</svg>`;
 }
 function buildLensSheet(){
-  $('lensList').innerHTML = LENSES.map(L=>`<button class="lensrow${L===st.lens?' on':''}" data-l="${L.id}" aria-pressed="${L===st.lens}"><div class="lensart-w">${lensDrawing(L)}</div><div class="lt"><b>Nikkor ${L.name} <em>${L.type}</em></b><span>${fN(L.clicks[0])} → ${fN(L.clicks[L.clicks.length-1])} · ${L.minM} m → ∞</span><span>Made ${L.years} · SN #${L.serial.replace(' to ',' to #')}</span></div></button>`).join('')
+  $('lensList').innerHTML = LENSES.map(L=>`<div class="lensitem"><button class="lensrow${L===st.lens?' on':''}" data-l="${L.id}" aria-pressed="${L===st.lens}"><div class="lensart-w">${lensDrawing(L)}</div><div class="lt"><b>Nikkor ${L.name} <em>${L.type}</em></b><span>${fN(L.clicks[0])} → ${fN(L.clicks[L.clicks.length-1])} · ${L.minM} m → ∞</span><span>Made ${L.years} · SN #${L.serial.replace(' to ',' to #')}</span></div></button><button class="infobtn" data-li="${L.id}" aria-label="About the ${L.name} lens"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 10.8v6"/><circle cx="12" cy="7.4" r="1.1" fill="currentColor" stroke="none"/></svg></button></div>`).join('')
 ;
   $('lensList').querySelectorAll('.lensrow').forEach(b=>b.onclick=()=>{ setLens(LENSES.find(L=>L.id===b.dataset.l)); closeSheets(); });
+  $('lensList').querySelectorAll('[data-li]').forEach(b=>b.onclick=()=>showLensInfo(LENSES.find(L=>L.id===b.dataset.li), true));
 }
 $('lensChip').onclick = ()=>{ buildLensSheet(); openSheet('lensSheet'); };
 function buildLenses(){
@@ -2087,6 +2193,10 @@ function filmButton(s){
   b.innerHTML=`<div class="box"></div><div class="txt"><span class="mk">${s.none?'Digital':s.maker}</span><span class="nm">${s.name}</span><div class="d">${s.note}</div></div><div class="iso">${s.none?'':s.iso}</div>`;
   const bx=b.querySelector('.box');
   if(s.none){ bx.classList.add('none'); bx.innerHTML='<b>OFF</b>'; } else boxStyle(bx, s);
+  const fi=document.createElement('span'); fi.className='finfo'; fi.setAttribute('role','button'); fi.setAttribute('aria-label',`About ${s.name}`);
+  fi.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 10.8v6"/><circle cx="12" cy="7.4" r="1.2" fill="currentColor" stroke="none"/></svg>';
+  fi.addEventListener('click', e=>{ e.stopPropagation(); showFilmInfo(s); });
+  b.appendChild(fi);
   b.onclick=()=>loadFilm(s);
   return b;
 }
@@ -2114,6 +2224,82 @@ function trapOpen(el, first){ if(focusStack.some(f=>f.el===el)) return; focusSta
 function trapClose(el, fallback){ const i=focusStack.findIndex(f=>f.el===el); if(i<0) return;
   const {back}=focusStack.splice(i,1)[0]; const t=(back && back.isConnected && back.getClientRects().length) ? back : fallback && fallback();
   t && t.focus && t.focus({preventScroll:true}); }
+/* ========================================================= info sheets: lenses and film stocks */
+const pct = v => (v>0?'+':v<0?'−':'') + Math.abs(Math.round(v*100)) + '%';
+const num = (v, d=2) => (Math.round(v*Math.pow(10,d))/Math.pow(10,d)).toString().replace('-','−');
+function hueName(v){
+  const m = Math.max(...v.map(Math.abs));
+  if(m < 0.002) return null;
+  const [r,g,b] = v, h = (Math.atan2(Math.sqrt(3)*(g-b), 2*r-g-b)*180/Math.PI + 360) % 360;
+  const names = [[15,'red'],[45,'orange'],[70,'yellow'],[160,'green'],[200,'cyan'],[255,'blue'],[290,'purple'],[340,'magenta'],[361,'red']];
+  return names.find(n=>h<n[0])[1];
+}
+function tintText(v){ const n = hueName(v); if(!n) return 'Neutral'; const m=Math.max(...v.map(Math.abs)); return `${n[0].toUpperCase()+n.slice(1)}, ${m>.02?'strong':m>.01?'moderate':'subtle'}`; }
+function level(v, steps){ return steps.find(x=>v<=x[0])[1]; }
+function filmRecipe(s){
+  const rows = [], bw = s.type==='bw';
+  rows.push(['Box speed', 'ISO '+s.iso, null]);
+  rows.push(['Contrast', s.c===1?'Standard':pct(s.c-1), 'c '+num(s.c)]);
+  if(!bw) rows.push(['Saturation', s.sat===1?'Standard':pct(s.sat-1), 'sat '+num(s.sat)]);
+  if(!bw){
+    const warm = s.wb[0]-s.wb[2], tint = s.wb[1]-(s.wb[0]+s.wb[2])/2;
+    rows.push(['White balance', Math.abs(warm)<.005 ? 'Neutral' : `${warm>0?'Warm':'Cool'} ${Math.round(Math.abs(warm)*100)}`, 'wb '+s.wb.map(x=>num(x)).join(' ')]);
+    if(Math.abs(tint)>.005) rows.push(['Tint', `${tint>0?'Green':'Magenta'} ${Math.round(Math.abs(tint)*100)}`, null]);
+    rows.push(['Shadow tone', tintText(s.shT), 'shT '+s.shT.map(x=>num(x,3)).join(' ')]);
+    rows.push(['Highlight tone', tintText(s.hiT), 'hiT '+s.hiT.map(x=>num(x,3)).join(' ')]);
+    if(s.mat) rows.push(['Color shift', 'Channels remixed', 'matrix']);
+  } else {
+    const [r,g,b] = s.bw;
+    rows.push(['Color response', `Red ${Math.round(r*100)} · Green ${Math.round(g*100)} · Blue ${Math.round(b*100)}`, 'bw mix']);
+  }
+  const blk = (s.black[0]+s.black[1]+s.black[2])/3;
+  rows.push(['Blacks', blk<.01?'Deep':blk<.04?'Slightly lifted':'Faded', 'black '+num(blk,3)]);
+  rows.push(['Shadow rolloff', s.toe>1.05?'Hard':s.toe<.95?'Soft':'Standard', 'toe '+num(s.toe)]);
+  rows.push(['Highlight rolloff', s.sh>1?'Hard, clips early':s.sh<.86?'Gentle, holds highlights':'Standard', 'shoulder '+num(s.sh)]);
+  rows.push(['Grain', `${level(s.grain,[[.012,'Very fine'],[.025,'Fine'],[.042,'Medium'],[.07,'Visible'],[1,'Heavy']])}, ${s.gsize<.9?'small':s.gsize>1.25?'large':'medium'} size`, 'grain '+num(s.grain,3)+' · size '+num(s.gsize)]);
+  rows.push(['Grain character', s.gsharp>=.5?'Sharp, clumpy':s.gsharp>=.25?'Crisp':'Smooth', 'sharp '+num(s.gsharp)]);
+  if(!bw) rows.push(['Grain color', s.gchroma>=.3?'Some color noise':'Mostly mono', 'chroma '+num(s.gchroma)]);
+  rows.push(['Halation', s.hal<.02?'None':s.hal<.15?'Faint':s.hal<.5?'Moderate':'Strong red glow', 'hal '+num(s.hal)]);
+  rows.push(['Bloom', s.bloom<.035?'Light':s.bloom<.06?'Moderate':'Strong', 'bloom '+num(s.bloom)]);
+  rows.push(['Vignette', s.vig<.13?'Light':s.vig<.17?'Moderate':'Noticeable', 'vig '+num(s.vig)]);
+  if(!bw){
+    const u = hueName(s.xu), o = hueName(s.xo);
+    if(u) rows.push(['Underexposed', 'Drifts '+u, 'xu']);
+    if(o) rows.push(['Overexposed', 'Drifts '+o, 'xo']);
+  }
+  return rows;
+}
+const FILM_LATITUDE = {neg:'Color negative film has wide latitude. It handles overexposure well and gets muddy and grainy when underexposed.',
+  slide:'Slide film has narrow latitude. Expose for the highlights, since blown areas cannot be recovered.',
+  bw:'Black and white film is forgiving and responds well to pushing and pulling.'};
+let infoReturn = null;
+function openInfo(title, html, back){
+  $('infoTitle').textContent = title; $('infoBody').innerHTML = html; $('infoBody').scrollTop = 0;
+  infoReturn = back || null; $('infoBack').style.visibility = back ? 'visible' : 'hidden';
+  document.querySelectorAll('.sheet.on').forEach(x=>{ if(x.id!=='infoSheet') x.classList.remove('on'); });
+  openSheet('infoSheet');
+}
+$('infoBack').onclick = ()=>{ const b = infoReturn; infoReturn = null; $('infoSheet').classList.remove('on'); if(b) b(); };
+function showFilmInfo(s){
+  if(s.none){ openInfo('No film', `<div class="ihead"><div class="ittl"><small>Digital</small><b>No film</b></div></div><p class="inote">The straight, unprocessed picture from the camera. No curve, color, grain or halation is applied.</p>`); return; }
+  const rows = filmRecipe(s).map(([k,v,raw])=>`<div class="irow"><dt>${k}</dt><dd>${v}${raw?`<small>${raw}</small>`:''}</dd></div>`).join('');
+  openInfo('Film', `<div class="ihead"><div class="box ibox"></div><div class="ittl"><small>${s.maker}</small><b>${s.name}</b><span>${GROUPS[s.type]} · ISO ${s.iso}</span></div></div>
+    <p class="inote">${s.note}</p>
+    <h3 class="isec">Vignette recipe</h3><dl class="ispec">${rows}</dl>
+    <p class="ifine">${FILM_LATITUDE[s.type]} Setting the ISO dial away from box speed pushes or pulls the roll: contrast and grain rise when pushed.</p>`);
+  boxStyle($('infoBody').querySelector('.ibox'), s);
+}
+function showLensInfo(L, fromSheet){
+  const aov = d=>Math.round(2*Math.atan(d/(2*L.f))*180/Math.PI);
+  const rows = [
+    ['Focal length', `${L.f}mm`], ['Angle of view', `${aov(43.27)}° diagonal · ${aov(36)}° horizontal`],
+    ['Aperture', `${fN(L.clicks[0])} to ${fN(L.clicks[L.clicks.length-1])}`], ['Closest focus', `${L.minM} m`],
+    ['Mount', MOUNT_NOTE[L.type]], ['Made', L.years], ['Serial numbers', '#'+L.serial.replace(' to ',' to #')]
+  ].map(([k,v])=>`<div class="irow"><dt>${k}</dt><dd>${v}</dd></div>`).join('');
+  openInfo('Lens', `<div class="ihead"><div class="iart">${lensDrawing(L)}</div><div class="ittl"><small>Nikkor ${L.type}</small><b>${L.name}</b><span>${LENS_NOTE[L.id]||''}</span></div></div>
+    <dl class="ispec">${rows}</dl>`,
+    fromSheet ? ()=>{ buildLensSheet(); openSheet('lensSheet'); } : null);
+}
 function openSheet(id){ $('scrim').classList.add('on'); $(id).classList.add('on'); trapOpen($(id)); }
 function closeSheets(){ $('scrim').classList.remove('on'); document.querySelectorAll('.sheet').forEach(x=>{ if(!x.classList.contains('on')) return; x.classList.remove('on'); trapClose(x); }); }
 document.addEventListener('keydown', e=>{
@@ -2140,6 +2326,13 @@ st.tabP = 'film'; st.tabL = 'film';
 if(matchMedia('(orientation: landscape) and (max-height: 520px)').matches) document.body.classList.add('panel-collapsed');
 $('ctlBtn').onclick = ()=>$('status').onclick();
 $('pClose').onclick = ()=>{ document.body.classList.remove('panel-open'); haptic(3); setTimeout(layout,300); };
+// scroll only the film list to the loaded film; scrollIntoView also scrolled the whole panel and pushed the tabs out of view
+function centerFilm(){
+  const fo = document.querySelector('.film.on'); if(!fo || document.body.classList.contains('panel-full')) return;
+  const sc = fo.closest('.pane'), fr = fo.getBoundingClientRect(), cr = sc.getBoundingClientRect();
+  if(sc.scrollWidth > sc.clientWidth + 2) sc.scrollLeft += (fr.left + fr.width/2) - (cr.left + cr.width/2);
+  if(sc.scrollHeight > sc.clientHeight + 2 && (fr.top < cr.top || fr.bottom > cr.bottom)) sc.scrollTop += (fr.top + fr.height/2) - (cr.top + cr.height/2);
+}
 function setFullNow(on){
   const b=document.body, P=document.querySelector('.panel'); if(on===b.classList.contains('panel-full')) return;
   if(on){ st.tabL = st.tabP==='film' ? 'film' : 'controls'; }
@@ -2265,7 +2458,7 @@ function applyTabs(){
     const on = land ? (cur==='film' ? p.dataset.pane==='film' : p.classList.contains('ctl')) : p.dataset.pane===cur;
     p.classList.toggle('on', on);
   });
-  const fo = document.querySelector('.film.on'); if(fo && cur==='film' && !document.body.classList.contains('panel-full')) fo.scrollIntoView({block:'nearest', inline:'center'});
+  if(cur==='film' && !document.body.classList.contains('panel-full')){ centerFilm(); setTimeout(centerFilm, 320); }
 }
 document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{
   if(matchMedia('(orientation: landscape)').matches || document.body.classList.contains('panel-full')) st.tabL = b.dataset.tab; else st.tabP = b.dataset.tab;
@@ -2568,7 +2761,7 @@ const shotDB = (()=>{
     tx.oncomplete = ()=> res(req && req.result); tx.onerror = ()=> rej(tx.error); tx.onabort = ()=> rej(tx.error); }); };
   return { put: s=>run('readwrite', o=>o.put(s)), del: id=>run('readwrite', o=>o.delete(id)), all: ()=>run('readonly', o=>o.getAll()) };
 })();
-const findStock = id=> id==='none' ? NOFILM : (STOCKS.find(x=>x.id===id) || STOCKS[1]);
+const findStock = id=> id==='none' ? NOFILM : (STOCKS.find(x=>x.id===id) || DEF_STOCK);
 function saveShot(r){
   const {bUrl, stock, url, _buf, ...rest} = r;
   if(!r.blob) rest.url = url;   // older frames were kept as data URLs
@@ -2839,7 +3032,7 @@ function loop(now){
         // stopped down, the finder shows the taking aperture's depth of field and gets darker, as through the real lever;
         // the darkening stops at 3 stops so the finder stays usable at f/16
         const fN0 = APERTURES[0], fNv = st.dofPrev ? APERTURES[st.ap] : fN0, dim = Math.min(3, 2*Math.log2(fNv/fN0));
-        draw(canvas.width, canvas.height, {expo:m.expo - dim, seed: frameSeed, finder:true, N:fNv, bypass:st.bypass});
+        liveDraw({expo:m.expo - dim, seed: frameSeed, finder:true, N:fNv, bypass:st.bypass});
         drawKey = key; drawSrc = st.source; lastDraw = now;
       }
     }
@@ -2925,7 +3118,7 @@ async function renderHeroes(){
   for(const [id,cr,n] of picks){
     const cc=document.createElement('canvas'); cc.width=800; cc.height=1200;
     cc.getContext('2d').drawImage(scene, cr[0],cr[1],cr[2],cr[3], 0,0,800,1200);
-    const stock=STOCKS.find(x=>x.id===id)||STOCKS[1];
+    const stock=STOCKS.find(x=>x.id===id)||DEF_STOCK;
     Object.assign(st, {img:cc, source:cc, srcKind:'image', srcLabel:'Hero', facing:'environment', stock, isoSet:stock.iso, focus:12*(1-TARGET_INV/FOCUS_MAX_INV)});
     upload(cc); canvas.width=W; canvas.height=H;
     draw(W, H, {expo:.4, seed:hashStr(id), finder:false, N:8, bypass:false});
