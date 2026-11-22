@@ -2198,7 +2198,7 @@ function filmButton(s){
   const fi=document.createElement('span'); fi.className='finfo'; fi.setAttribute('role','button'); fi.setAttribute('aria-label',`About ${s.name}`);
   fi.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 10.8v6"/><circle cx="12" cy="7.4" r="1.2" fill="currentColor" stroke="none"/></svg>';
   fi.addEventListener('click', e=>{ e.stopPropagation(); showFilmInfo(s); });
-  b.appendChild(fi);
+  if(!s.none) b.appendChild(fi);
   b.onclick=()=>loadFilm(s);
   return b;
 }
