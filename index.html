@@ -1206,9 +1206,9 @@ const BASE = {
   bw:   {xu:[0,0,0], xo:[0,0,0], toe:1.0, sh:.88, black:[.03,.03,.03],  white:[.95,.95,.95],  gchroma:0,   hal:0,   halC:[1,1,1],    bloom:.03, vig:.14}
 };
 const S = (o)=>Object.assign({gsharp:.15,wb:[1,1,1],mat:null,c:1,chanC:[1,1,1],chanOff:[0,0,0],sat:1,shT:[0,0,0],hiT:[0,0,0],grain:.03,gsize:1,bw:[.27,.6,.13]}, BASE[o.type], o);
-const SHORT = {superia400:'Superia 400',c200:'C200',pro400h:'Pro 400H',cs800t:'800T',cs50d:'50D',cs400d:'400D',
+const SHORT = {c200:'Fujicolor 200',cs800t:'800T',cs50d:'50D',cs400d:'400D',
   lomopurple:'Purple',lomoturq:'Turquoise',lomometro:'Metropolis',lomo100:'Lomo 100',lomo400:'Lomo 400',lomo800:'Lomo 800',
-  e100:'E100',provia100f:'Provia 100F',kodachrome64:'Kodachrome 64',tmax3200:'P3200',ladygrey:'Lady Grey'};
+  e100:'E100',provia100f:'Provia 100F',tmax3200:'P3200',ladygrey:'Lady Grey'};
 const STOCKS = [
   // color negative
   S({id:'portra160',xu:[-0.015, 0.025, 0.02],xo:[0.012, 0.008, -0.012],type:'neg',maker:'Kodak',name:'Portra 160',iso:160,box:['#5f4fa0','#f2b31b','#fff'],note:'Finest grain Portra. Soft, slightly muted color made for skin. Happiest in bright light.',
@@ -1225,12 +1225,8 @@ const STOCKS = [
      c:1,sat:1.04,wb:[1.06,1.03,.9],hiT:[.02,.018,-.02],shT:[0,.006,0],grain:.04,gsize:1.15,black:[.045,.045,.045]}),
   S({id:'ultramax400',xu:[-0.005, 0.02, -0.02],xo:[0.02, 0.012, -0.025],type:'neg',maker:'Kodak',name:'UltraMax 400',iso:400,box:['#f9c21a','#2156a5','#141414'],note:'Warm, saturated everyday film. Grainier than the 200s, likes extra light.',
      c:1.08,sat:1.2,wb:[1.06,1.01,.9],hiT:[.02,.01,-.02],grain:.04,gsize:1.15}),
-  S({id:'superia400',xu:[-0.02, 0.045, 0],xo:[-0.01, 0.015, 0.01],type:'neg',maker:'Fujifilm',name:'Superia X-TRA 400',iso:400,box:['#0a8a4a','#e3007e','#fff'],note:'Cooler Fuji palette with deep greens and bright pinks.',
-     c:1.05,sat:1.1,wb:[.98,1.03,1],chanC:[1,1.04,1],shT:[-.012,.01,.016],hiT:[0,.006,0],grain:.04,gsize:1.15}),
-  S({id:'c200',xu:[-0.02, 0.045, 0],xo:[-0.01, 0.015, 0.01],type:'neg',maker:'Fujifilm',name:'Fujicolor C200',iso:200,box:['#11a35f','#f4f4f2','#fff'],note:'Budget Fuji. Cool tones with greens creeping into the shadows.',
+  S({id:'c200',xu:[-0.02, 0.045, 0],xo:[-0.01, 0.015, 0.01],type:'neg',maker:'Fujifilm',name:'Fujicolor 200',iso:200,box:['#11a35f','#f4f4f2','#fff'],note:'Budget Fuji. Cool tones with greens creeping into the shadows.',
      c:1,sat:1,wb:[.98,1.02,1.01],shT:[-.01,.012,.01],black:[.04,.05,.05],grain:.04,gsize:1.1}),
-  S({id:'pro400h',xu:[-0.01, 0.03, 0.02],xo:[-0.015, 0.015, 0.015],type:'neg',maker:'Fujifilm',name:'Pro 400H',iso:400,box:['#e8f1ec','#2fa27e','#1b5b46'],note:'Airy and pastel with cool greens. Discontinued in 2021.',
-     c:.88,sat:.84,wb:[.98,1.01,1.03],hiT:[-.006,.01,.01],black:[.05,.055,.06],grain:.028}),
   S({id:'cs800t',xu:[-0.03, 0.015, 0.03],xo:[0.02, 0, -0.01],type:'neg',maker:'CineStill',name:'800T',iso:800,box:['#d9262b','#f1f1f1','#fff'],note:'Tungsten balanced cine film. Red halation glow around lights, made for night.',
      c:1,sat:1.05,wb:[.82,.95,1.18],hal:.95,halC:[1,.22,.08],bloom:.07,grain:.045,gsize:1.2}),
   S({id:'cs50d',type:'neg',maker:'CineStill',name:'50D',iso:50,box:['#2c63c2','#f1f1f1','#fff'],note:'Daylight cine stock with ultra fine grain. Clean, sharp and saturated.',
@@ -1256,8 +1252,6 @@ const STOCKS = [
      c:1.25,sat:1.4,wb:[1,.98,1],chanC:[1.04,1.1,1.05],shT:[.012,-.006,.016],grain:.007,gsize:.7}),
   S({id:'provia100f',xu:[0, -0.01, 0.02],xo:[-0.005, 0, 0.01],type:'slide',maker:'Fujifilm',name:'Provia 100F',iso:100,box:['#2a9b5a','#f4f4f2','#fff'],note:'Balanced, natural slide film with the most forgiving latitude of the three.',
      c:1.18,sat:1.14,wb:[.99,1,1.01],grain:.009,gsize:.75}),
-  S({id:'kodachrome64',xu:[0.025, 0, -0.02],xo:[-0.005, 0, 0.01],type:'slide',maker:'Kodak',name:'Kodachrome 64',iso:64,box:['#f9c21a','#d42027','#141414'],note:'Rich reds and deep blues. Production ended in 2009.',
-     c:1.25,sat:1.18,wb:[1.03,1,.95],chanC:[1.08,1,1.04],shT:[.01,0,-.004],black:[.012,.006,0],grain:.012}),
   // black and white
   S({id:'trix400',type:'bw',maker:'Kodak',name:'Tri-X 400',iso:400,box:['#f9c21a','#141414','#141414'],note:'Punchy contrast and gritty grain. The street and photojournalism classic.',
      c:1.2,sh:.82,bw:[.3,.56,.14],grain:.085,gsize:1.45,gsharp:.75}),
