@@ -1022,8 +1022,8 @@ body:has(#lensSheet.on, #infoSheet.on) .shootwrap{visibility:hidden}
 .ittl small{font:500 12px/1 Inter,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
 .ittl b{font:600 26px/1.05 var(--num);letter-spacing:.02em;color:var(--ink)}
 .ittl span{font-size:13px;line-height:1.35;color:var(--mute)}
-.inote{margin:0 0 16px;font-size:15px;line-height:1.45;color:var(--ink)}
-.isec{margin:18px 0 6px;font:500 11px/1 Inter,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.inote{margin:2px 0 0;font-size:15px;line-height:1.45;color:var(--ink)}
+.isec{margin:32px 0 12px;font:500 11px/1 Inter,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
 .ispec{margin:0;display:grid}
 .irow{display:grid;grid-template-columns:132px 1fr;gap:12px;padding:11px 0;border-top:1px solid rgba(255,255,255,.07)}
 .irow dt{color:var(--mute);font-size:13px;line-height:1.35}
@@ -2315,7 +2315,7 @@ function showFilmInfo(s, fromSheet){
   const rows = filmRecipe(s).map(([k,v,raw,q])=>`<div class="irow"><dt>${k}</dt><dd>${v}${q?sliderHTML(q):''}${raw?`<small>${raw}</small>`:''}</dd></div>`).join('');
   openInfo('Film', `<div class="ihead"><div class="box ibox"></div><div class="ittl"><small>${s.maker}</small><b>${s.name}</b><span>${GROUPS[s.type]} · ISO ${s.iso}</span></div></div>
     <p class="inote">${s.note}</p>
-    <h3 class="isec">Vignette recipe</h3><dl class="ispec">${rows}</dl>
+    <h3 class="isec">Recipe</h3><dl class="ispec">${rows}</dl>
     <p class="ifine">${FILM_LATITUDE[s.type]} Setting the ISO dial away from box speed pushes or pulls the roll: contrast and grain rise when pushed.</p>`, fromSheet ? ()=>{} : null, fromSheet);
   boxStyle($('infoBody').querySelector('.ibox'), s);
 }
