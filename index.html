@@ -995,6 +995,11 @@ body.panel-full .film .finfo:active{background:rgba(255,255,255,.18)}
   .focusH.over::before{width:96px!important;background:linear-gradient(90deg,rgba(0,0,0,.82) 0 52px,rgba(0,0,0,0))!important}
   .focusH.over::after{width:120px!important;background:linear-gradient(270deg,rgba(0,0,0,.82) 0 76px,rgba(0,0,0,0))!important}
 }
+/* film detail opened from the film sheet: a sub sheet that pushes in from the right over it */
+.sheet.infosheet.sub:not(.on){transform:translateX(calc(100% + 16px))!important}
+.sheet.infosheet.sub{transition:transform .32s var(--ease-out),visibility 0s .32s}
+.sheet.infosheet.sub.on{transition:transform .32s var(--ease-out)}
+body:has(#infoSheet.sub.on) .scrim{background:rgba(0,0,0,.35)!important}
 /* full height sheets cover the shutter row; keep it from showing through the glass */
 body:has(#lensSheet.on, #infoSheet.on) .shootwrap{visibility:hidden}
 /* ===== lens list with info buttons ===== */
@@ -1006,7 +1011,8 @@ body:has(#lensSheet.on, #infoSheet.on) .shootwrap{visibility:hidden}
 .infosheet .body{padding:4px 20px 22px!important}
 .sheet.infosheet,#lensSheet{top:calc(8px + env(safe-area-inset-top))!important;max-height:none!important;display:flex;flex-direction:column}
 .sheet.infosheet .body,#lensSheet .body{flex:1 1 auto;min-height:0;overflow:auto}
-@media (min-width:900px){ .sheet.infosheet,#lensSheet{top:5vh!important} }
+/* same footprint as the full height film sheet, at every width */
+.sheet.infosheet,#lensSheet{left:8px!important;right:8px!important;width:auto!important;margin-left:0!important;bottom:calc(8px + env(safe-area-inset-bottom))!important}
 .ihead{display:flex;align-items:center;gap:16px;margin:4px 0 14px}
 .ihead .ibox{width:92px;height:66px;border-radius:3px}
 .ihead .ibox::after{font-size:22px;left:8px;top:calc(8px + var(--tb,0px))}
@@ -2197,7 +2203,7 @@ function filmButton(s){
   if(s.none){ bx.classList.add('none'); bx.innerHTML='<b>OFF</b>'; } else boxStyle(bx, s);
   const fi=document.createElement('span'); fi.className='finfo'; fi.setAttribute('role','button'); fi.setAttribute('aria-label',`About ${s.name}`);
   fi.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 10.8v6"/><circle cx="12" cy="7.4" r="1.2" fill="currentColor" stroke="none"/></svg>';
-  fi.addEventListener('click', e=>{ e.stopPropagation(); showFilmInfo(s); });
+  fi.addEventListener('click', e=>{ e.stopPropagation(); showFilmInfo(s, true); });
   if(!s.none) b.appendChild(fi);
   b.onclick=()=>loadFilm(s);
   return b;
@@ -2275,20 +2281,23 @@ const FILM_LATITUDE = {neg:'Color negative film has wide latitude. It handles ov
   slide:'Slide film has narrow latitude. Expose for the highlights, since blown areas cannot be recovered.',
   bw:'Black and white film is forgiving and responds well to pushing and pulling.'};
 let infoReturn = null;
-function openInfo(title, html, back){
+function openInfo(title, html, back, sub){
+  $('infoSheet').classList.toggle('sub', !!sub);
   $('infoTitle').textContent = title; $('infoBody').innerHTML = html; $('infoBody').scrollTop = 0;
   infoReturn = back || null; $('infoBack').style.visibility = back ? 'visible' : 'hidden';
   document.querySelectorAll('.sheet.on').forEach(x=>{ if(x.id!=='infoSheet') x.classList.remove('on'); });
   openSheet('infoSheet');
 }
-$('infoBack').onclick = ()=>{ const b = infoReturn; infoReturn = null; $('infoSheet').classList.remove('on'); if(b) b(); };
-function showFilmInfo(s){
+$('infoBack').onclick = ()=>{ const b = infoReturn; infoReturn = null; const I = $('infoSheet');
+  if(I.classList.contains('sub')){ I.classList.remove('on'); $('scrim').classList.remove('on'); trapClose(I); setTimeout(()=>I.classList.remove('sub'), 300); return; }  // back to the film sheet underneath
+  closeSheets(); if(b) b(); };
+function showFilmInfo(s, fromSheet){
   if(s.none){ openInfo('No film', `<div class="ihead"><div class="ittl"><small>Digital</small><b>No film</b></div></div><p class="inote">The straight, unprocessed picture from the camera. No curve, color, grain or halation is applied.</p>`); return; }
   const rows = filmRecipe(s).map(([k,v,raw])=>`<div class="irow"><dt>${k}</dt><dd>${v}${raw?`<small>${raw}</small>`:''}</dd></div>`).join('');
   openInfo('Film', `<div class="ihead"><div class="box ibox"></div><div class="ittl"><small>${s.maker}</small><b>${s.name}</b><span>${GROUPS[s.type]} · ISO ${s.iso}</span></div></div>
     <p class="inote">${s.note}</p>
     <h3 class="isec">Vignette recipe</h3><dl class="ispec">${rows}</dl>
-    <p class="ifine">${FILM_LATITUDE[s.type]} Setting the ISO dial away from box speed pushes or pulls the roll: contrast and grain rise when pushed.</p>`);
+    <p class="ifine">${FILM_LATITUDE[s.type]} Setting the ISO dial away from box speed pushes or pulls the roll: contrast and grain rise when pushed.</p>`, fromSheet ? ()=>{} : null, fromSheet);
   boxStyle($('infoBody').querySelector('.ibox'), s);
 }
 function showLensInfo(L, fromSheet){
@@ -2303,7 +2312,7 @@ function showLensInfo(L, fromSheet){
     fromSheet ? ()=>{ buildLensSheet(); openSheet('lensSheet'); } : null);
 }
 function openSheet(id){ $('scrim').classList.add('on'); $(id).classList.add('on'); trapOpen($(id)); }
-function closeSheets(){ $('scrim').classList.remove('on'); document.querySelectorAll('.sheet').forEach(x=>{ if(!x.classList.contains('on')) return; x.classList.remove('on'); trapClose(x); }); }
+function closeSheets(){ const I=$('infoSheet'); if(I.classList.contains('on') && I.classList.contains('sub')){ I.classList.remove('sub'); document.body.classList.remove('panel-open'); setTimeout(layout,300); } $('scrim').classList.remove('on'); document.querySelectorAll('.sheet').forEach(x=>{ if(!x.classList.contains('on')) return; x.classList.remove('on'); trapClose(x); }); }
 document.addEventListener('keydown', e=>{
   if(e.key==='Escape'){ // close whatever is on top
     const c=$('lbConfirm');
