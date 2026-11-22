@@ -1206,7 +1206,7 @@ const BASE = {
   bw:   {xu:[0,0,0], xo:[0,0,0], toe:1.0, sh:.88, black:[.03,.03,.03],  white:[.95,.95,.95],  gchroma:0,   hal:0,   halC:[1,1,1],    bloom:.03, vig:.14}
 };
 const S = (o)=>Object.assign({gsharp:.15,wb:[1,1,1],mat:null,c:1,chanC:[1,1,1],chanOff:[0,0,0],sat:1,shT:[0,0,0],hiT:[0,0,0],grain:.03,gsize:1,bw:[.27,.6,.13]}, BASE[o.type], o);
-const SHORT = {c200:'Fujicolor 200',proimage100:'Pro Image 100',phoenix2:'Phoenix II',cs800t:'800T',cs50d:'50D',cs400d:'400D',
+const SHORT = {proimage100:'Pro Image 100',phoenix2:'Phoenix II',cs800t:'800T',cs50d:'50D',cs400d:'400D',
   lomopurple:'Purple',lomoturq:'Turquoise',lomometro:'Metropolis',lomo100:'Lomo 100',lomo400:'Lomo 400',lomo800:'Lomo 800',
   e100:'E100',provia100f:'Provia 100F',tmax3200:'P3200',ladygrey:'Lady Grey'};
 const STOCKS = [
@@ -1225,7 +1225,7 @@ const STOCKS = [
      c:1,sat:1.04,wb:[1.06,1.03,.9],hiT:[.02,.018,-.02],shT:[0,.006,0],grain:.04,gsize:1.15,black:[.045,.045,.045]}),
   S({id:'ultramax400',xu:[-0.005, 0.02, -0.02],xo:[0.02, 0.012, -0.025],type:'neg',maker:'Kodak',name:'UltraMax 400',iso:400,box:['#f9c21a','#2156a5','#141414'],note:'Warm, saturated everyday film. Grainier than the 200s, likes extra light.',
      c:1.08,sat:1.2,wb:[1.06,1.01,.9],hiT:[.02,.01,-.02],grain:.04,gsize:1.15}),
-  S({id:'c200',xu:[-0.005, 0.02, -0.02],xo:[0.02, 0.012, -0.025],type:'neg',maker:'Fujifilm',name:'Fujicolor 200',iso:200,box:['#11a35f','#f4f4f2','#fff'],note:'Fuji’s current 200, made in the USA. Warm and bright, close to Kodak Gold.',
+  S({id:'c200',xu:[-0.005, 0.02, -0.02],xo:[0.02, 0.012, -0.025],type:'neg',maker:'Fujifilm',name:'200',iso:200,box:['#11a35f','#f4f4f2','#fff'],note:'Fuji’s current 200, made in the USA. Warm and bright, close to Kodak Gold.',
      c:1.03,sat:1.1,wb:[1.07,1.02,.9],chanC:[1,1.02,.96],hiT:[.024,.014,-.026],grain:.034,gsize:1.1}),
   S({id:'fuji400',xu:[-0.005, 0.02, -0.02],xo:[0.02, 0.012, -0.025],type:'neg',maker:'Fujifilm',name:'400',iso:400,box:['#11a35f','#d9262b','#fff'],note:'Fuji’s current 400, made in the USA. Warm everyday color with visible grain, close to UltraMax.',
      c:1.07,sat:1.15,wb:[1.05,1.01,.91],hiT:[.018,.01,-.018],grain:.042,gsize:1.15}),
