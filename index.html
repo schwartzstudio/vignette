@@ -1206,7 +1206,7 @@ const BASE = {
   bw:   {xu:[0,0,0], xo:[0,0,0], toe:1.0, sh:.88, black:[.03,.03,.03],  white:[.95,.95,.95],  gchroma:0,   hal:0,   halC:[1,1,1],    bloom:.03, vig:.14}
 };
 const S = (o)=>Object.assign({gsharp:.15,wb:[1,1,1],mat:null,c:1,chanC:[1,1,1],chanOff:[0,0,0],sat:1,shT:[0,0,0],hiT:[0,0,0],grain:.03,gsize:1,bw:[.27,.6,.13]}, BASE[o.type], o);
-const SHORT = {proimage100:'Pro Image 100',phoenix:'Phoenix 125',phoenix2:'Phoenix II',azure:'Switch Azure',color92:'Color ’92',cs800t:'800T',cs50d:'50D',cs400d:'400D',
+const SHORT = {proimage100:'Pro Image 100',phoenix:'Phoenix 125',phoenix2:'Phoenix II',azure:'Switch Azure',color92:'Color ’92',color92sun:'Sun-kissed',cs800t:'800T',cs50d:'50D',cs400d:'400D',
   lomopurple:'Purple',lomoturq:'Turquoise',lomometro:'Metropolis',lomo100:'Lomo 100',lomo400:'Lomo 400',lomo800:'Lomo 800',classicolor:'Classicolor',
   e100:'E100',provia100f:'Provia 100F',tmax3200:'P3200',ladygrey:'Lady Grey'};
 const STOCKS = [
@@ -1243,6 +1243,8 @@ const STOCKS = [
      c:1,sat:1.06,wb:[1.03,1,.96],hiT:[.012,.008,-.01],shT:[-.004,.002,.008],hal:.08,grain:.03,gsize:1.05}),
   S({id:'color92',xu:[-0.01, 0.02, -0.02],xo:[0.02, 0.012, -0.025],type:'neg',maker:'Lomography',name:'LomoChrome Color ’92',iso:400,box:['#e2a13a','#c43b2a','#fff'],note:'A nostalgic 90s snapshot look. Warm, slightly faded color with visible grain.',
      c:.98,sat:1.05,wb:[1.08,1.01,.9],hiT:[.022,.012,-.02],shT:[0,.006,.01],black:[.05,.05,.055],hal:.15,grain:.05,gsize:1.2,gsharp:.3}),
+  S({id:'color92sun',xu:[-0.01, 0.02, -0.03],xo:[0.025, 0.014, -0.03],type:'neg',maker:'Lomography',name:'LomoChrome Color ’92 Sun-kissed',iso:400,box:['#b9825a','#8a5a3c','#f3d9b8'],note:'A golden, sun warmed take on Color ’92. Honeyed skin tones and soft, nostalgic color.',
+     c:.97,sat:1.08,wb:[1.12,1.02,.84],hiT:[.03,.018,-.026],shT:[.006,.004,0],black:[.055,.05,.05],hal:.18,halC:[1,.45,.2],grain:.05,gsize:1.2,gsharp:.3}),
   S({id:'redscale',type:'neg',maker:'Lomography',name:'Redscale XR',iso:100,box:['#b3231f','#141414','#fff'],note:'Film loaded back to front, shot through the base. Everything glows red, orange and yellow.',
      mat:[.75,.45,.15, .18,.26,.05, .03,.04,.02],wb:[1.1,.92,.8],c:1.08,sat:1.25,black:[.03,.01,0],grain:.045,gsize:1.15}),
   S({id:'cs800t',xu:[-0.03, 0.015, 0.03],xo:[0.02, 0, -0.01],type:'neg',maker:'CineStill',name:'800T',iso:800,box:['#d9262b','#f1f1f1','#fff'],note:'Tungsten balanced cine film. Red halation glow around lights, made for night.',
