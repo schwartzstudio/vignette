@@ -1206,7 +1206,7 @@ const BASE = {
   bw:   {xu:[0,0,0], xo:[0,0,0], toe:1.0, sh:.88, black:[.03,.03,.03],  white:[.95,.95,.95],  gchroma:0,   hal:0,   halC:[1,1,1],    bloom:.03, vig:.14}
 };
 const S = (o)=>Object.assign({gsharp:.15,wb:[1,1,1],mat:null,c:1,chanC:[1,1,1],chanOff:[0,0,0],sat:1,shT:[0,0,0],hiT:[0,0,0],grain:.03,gsize:1,bw:[.27,.6,.13]}, BASE[o.type], o);
-const SHORT = {proimage100:'Pro Image 100',phoenix:'Phoenix',cs800t:'800T',cs50d:'50D',cs400d:'400D',
+const SHORT = {proimage100:'Pro Image 100',phoenix:'Phoenix 125',phoenix2:'Phoenix II',cs800t:'800T',cs50d:'50D',cs400d:'400D',
   lomopurple:'Purple',lomoturq:'Turquoise',lomometro:'Metropolis',lomo100:'Lomo 100',lomo400:'Lomo 400',lomo800:'Lomo 800',
   e100:'E100',provia100f:'Provia 100F',tmax3200:'P3200',ladygrey:'Lady Grey'};
 const STOCKS = [
@@ -1231,8 +1231,10 @@ const STOCKS = [
      c:1.07,sat:1.15,wb:[1.05,1.01,.91],hiT:[.018,.01,-.018],grain:.042,gsize:1.15}),
   S({id:'proimage100',xu:[-0.01, 0.02, -0.01],xo:[0.015, 0.01, -0.02],type:'neg',maker:'Kodak',name:'Pro Image 100',iso:100,box:['#f2f2f2','#d9262b','#141414'],note:'Warm, fine grained everyday film made for portraits in sunny climates.',
      c:1.02,sat:1.06,wb:[1.05,1,.93],chanOff:[.03,0,-.02],hiT:[.016,.01,-.014],grain:.02,gsize:.9}),
-  S({id:'phoenix',xu:[-0.03, 0.01, 0.04],xo:[0.035, 0, -0.03],type:'neg',maker:'Harman',name:'Phoenix 200',iso:200,box:['#e8611a','#141414','#fff'],note:'Harman’s first color film. Bold and unpredictable, with high contrast, heavy grain and strong red halation.',
+  S({id:'phoenix',xu:[-0.03, 0.01, 0.04],xo:[0.035, 0, -0.03],type:'neg',maker:'Harman',name:'Phoenix 125',iso:125,box:['#e8611a','#141414','#fff'],note:'The original Phoenix emulsion, rerated to 125. Punchy contrast, vivid color, heavy grain and red halation.',
      c:1.22,sat:1.18,wb:[1.08,.98,.88],chanC:[1.06,1,.96],chanOff:[.08,-.02,-.04],hiT:[.026,.008,-.02],shT:[-.006,-.004,.014],hal:.75,halC:[1,.26,.08],bloom:.06,grain:.072,gsize:1.4,gsharp:.45}),
+  S({id:'phoenix2',xu:[-0.02, 0.01, 0.03],xo:[0.025, 0, -0.02],type:'neg',maker:'Harman',name:'Phoenix II 200',iso:200,box:['#f0a23a','#141414','#fff'],note:'Harman’s second generation color film. Calmer than the original, with finer grain and more normal color.',
+     c:1.08,sat:1.08,wb:[1.05,.99,.93],chanOff:[.05,-.01,-.02],hiT:[.018,.006,-.014],shT:[-.004,0,.01],hal:.3,halC:[1,.3,.1],grain:.045,gsize:1.2,gsharp:.3}),
   S({id:'cs800t',xu:[-0.03, 0.015, 0.03],xo:[0.02, 0, -0.01],type:'neg',maker:'CineStill',name:'800T',iso:800,box:['#d9262b','#f1f1f1','#fff'],note:'Tungsten balanced cine film. Red halation glow around lights, made for night.',
      c:1,sat:1.05,wb:[.82,.95,1.18],hal:.95,halC:[1,.22,.08],bloom:.07,grain:.045,gsize:1.2}),
   S({id:'cs50d',type:'neg',maker:'CineStill',name:'50D',iso:50,box:['#2c63c2','#f1f1f1','#fff'],note:'Daylight cine stock with ultra fine grain. Clean, sharp and saturated.',
