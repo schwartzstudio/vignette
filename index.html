@@ -1009,6 +1009,19 @@ body:has(#lensSheet.on, #infoSheet.on) .shootwrap{visibility:hidden}
 .lensitem .lensrow{padding-right:50px}
 .lensitem .infobtn{position:absolute;right:8px;top:50%;margin-top:-18px;background:rgba(255,255,255,.06);color:var(--mute)}
 .lensitem .infobtn:active{background:rgba(255,255,255,.14);color:var(--ink)}
+/* lens list matches the film list: tile card, small caps maker line, name, soft detail, round info button */
+#lensList{gap:6px!important}
+.lensrow{padding:9px 10px;gap:12px;border:1px solid var(--tile-line);background:var(--tile);border-radius:var(--r-tile);box-shadow:none}
+.lensrow:hover{background:var(--tile);border-color:var(--edge)}
+.lensrow.on{background:var(--tile-on);border-color:var(--tile-line-on);box-shadow:none}
+.lensrow .lt{gap:3px}
+.lensrow .mk{font:600 10px/1 var(--num);letter-spacing:.14em;color:var(--mute);text-transform:uppercase}
+.lensrow b{font:600 17px/1.1 var(--num);letter-spacing:.02em;color:var(--ink)}
+.lensrow span{color:var(--soft);font-size:12.5px;line-height:1.35}
+.lensrow.on .mk{color:var(--ink)}
+.lensitem .infobtn{right:10px;background:rgba(255,255,255,.08);color:var(--ink)}
+.lensitem .infobtn:active{background:rgba(255,255,255,.18)}
+
 /* ===== info sheet ===== */
 .infosheet .body{padding:4px 20px 22px!important}
 .sheet.infosheet,#lensSheet{top:calc(8px + env(safe-area-inset-top))!important;max-height:none!important;display:flex;flex-direction:column}
@@ -2156,7 +2169,7 @@ function lensDrawing(L, s=.9){
   return `<img class="lensart" src="lenses/${L.id}.webp" width="${(w/5*s).toFixed(1)}" height="${(h/5*s).toFixed(1)}" alt="" draggable="false" decoding="async">`;
 }
 function buildLensSheet(){
-  $('lensList').innerHTML = LENSES.map(L=>`<div class="lensitem"><button class="lensrow${L===st.lens?' on':''}" data-l="${L.id}" aria-pressed="${L===st.lens}"><div class="lensart-w">${lensDrawing(L)}</div><div class="lt"><b>Nikkor ${L.name} <em>${L.type}</em></b><span>${fN(L.clicks[0])} → ${fN(L.clicks[L.clicks.length-1])} · ${L.minM} m → ∞</span><span>Made ${L.years}${snTxt(L)?' · SN '+snTxt(L):''}</span></div></button><button class="infobtn" data-li="${L.id}" aria-label="About the ${L.name} lens"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 10.8v6"/><circle cx="12" cy="7.4" r="1.1" fill="currentColor" stroke="none"/></svg></button></div>`).join('')
+  $('lensList').innerHTML = LENSES.map(L=>`<div class="lensitem"><button class="lensrow${L===st.lens?' on':''}" data-l="${L.id}" aria-pressed="${L===st.lens}"><div class="lensart-w">${lensDrawing(L)}</div><div class="lt"><small class="mk">Nikkor · ${L.type}</small><b>${L.name}</b><span>${fN(L.clicks[0])} → ${fN(L.clicks[L.clicks.length-1])} · ${L.minM} m → ∞</span><span>Made ${L.years}${snTxt(L)?' · SN '+snTxt(L):''}</span></div></button><button class="infobtn" data-li="${L.id}" aria-label="About the ${L.name} lens"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 10.8v6"/><circle cx="12" cy="7.4" r="1.2" fill="currentColor" stroke="none"/></svg></button></div>`).join('')
 ;
   $('lensList').querySelectorAll('.lensrow').forEach(b=>b.onclick=()=>{ setLens(LENSES.find(L=>L.id===b.dataset.l)); closeSheets(); });
   $('lensList').querySelectorAll('[data-li]').forEach(b=>b.onclick=()=>showLensInfo(LENSES.find(L=>L.id===b.dataset.li), true));
