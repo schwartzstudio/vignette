@@ -1591,7 +1591,7 @@ uniform sampler2D uTex;
 uniform vec2 uOut, uCrop, uCenter, uOff;
 uniform float uDim;
 uniform float uMirror, uSrcPerOut, uExpo, uC, uToe, uSh, uSat, uGrain, uGSize, uGChroma, uGSharp, uHal, uBloom, uHalLod, uVig;
-uniform float uFinder, uR, uErr, uBlur, uBypass, uNeg;
+uniform float uFinder, uR, uErr, uBlur, uBypass, uNeg, uDof;
 uniform int uBW;
 uniform int uScreen;
 uniform uint uSeed;
@@ -1653,7 +1653,10 @@ void main(){
       aid += (1.0 - smoothstep(uR, uR+1.6, r))*0.45 + smoothstep(uR*1.6-1.6, uR*1.62, r)*0.3;
     }
   }
-  vec3 c = samp(uv + off/uOut, uBlur);
+  // depth of field: with no depth map, treat the frame's middle as the subject and let the scene fall out of focus
+  // toward the edges, more with a longer lens, a wider aperture and a nearer subject; nothing at all by f/22
+  float rD = uDof * smoothstep(0.05, 0.7, length(fc - uCenter)/minO);
+  vec3 c = samp(uv + off/uOut, sqrt(uBlur*uBlur + rD*rD));
   vec3 col;
   if(uBypass > 0.5){
     col = c;
@@ -1867,6 +1870,10 @@ function draw(w, h, opt){
   const err = focusErr();
   gl.uniform1f(U.uErr, err);
   gl.uniform1f(U.uBlur, Math.max(0, Math.abs(err)*0.022*minO*(1.8/opt.N)*Math.pow(st.lens.f/50, 1.6) - 0.3));
+  // fake depth of field: full at f/1.8, gone at f/22; a 3 m subject is the reference, nearer is shallower
+  const open = clamp((1/opt.N - 1/22)/(1/1.8 - 1/22), 0, 1.4);
+  const near = Math.pow(clamp(focusInv()*3, 0.1, 5), 0.6);
+  gl.uniform1f(U.uDof, 0.04*minO*open*near*Math.pow(st.lens.f/50, 1.6));
   gl.uniform1f(U.uBypass, (opt.bypass || s.none) ? 1 : 0);
   gl.drawArrays(gl.TRIANGLES, 0, 3);
 }
