@@ -1015,13 +1015,15 @@ body:has(#lensSheet.on, #infoSheet.on) .shootwrap{visibility:hidden}
 .sheet.infosheet .body,#lensSheet .body{flex:1 1 auto;min-height:0;overflow:auto}
 /* same footprint as the full height film sheet, at every width */
 .sheet.infosheet,#lensSheet{left:8px!important;right:8px!important;width:auto!important;margin-left:0!important;bottom:calc(8px + env(safe-area-inset-bottom))!important}
-.ihead{display:flex;align-items:center;gap:16px;margin:4px 0 14px}
-.ihead .ibox{width:92px;height:66px;border-radius:3px}
-.ihead .ibox::after{font-size:22px;left:8px;top:calc(8px + var(--tb,0px))}
-.ihead .iart{width:92px;flex:none;display:flex;justify-content:center;color:var(--ink)}
+.ihead{display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;margin:10px 0 18px}
+.ihead .ibox{width:176px;height:128px;border-radius:4px}
+.ihead .ibox::after{font-size:40px;left:14px;top:calc(14px + var(--tb,0px))}
+.ihead .iart{flex:none;display:flex;justify-content:center;color:var(--ink)}
 .ihead .iart svg{width:auto;height:96px}
 .ihead .iart img{display:block;max-width:none}
 .ittl{display:flex;flex-direction:column;gap:4px;min-width:0}
+.ihead .ittl{align-items:center;gap:6px}
+.ihead .ittl b{font-size:32px}
 .ittl small{font:500 12px/1 Inter,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
 .ittl b{font:600 26px/1.05 var(--num);letter-spacing:.02em;color:var(--ink)}
 .ittl span{font-size:13px;line-height:1.35;color:var(--mute)}
@@ -2481,7 +2483,7 @@ function showLensInfo(L, fromSheet){
     ['Aperture', `${fN(L.clicks[0])} to ${fN(L.clicks[L.clicks.length-1])}`], ['Closest focus', `${L.minM} m`],
     ['Mount', MOUNT_NOTE[L.type]], ['Made', L.years], ...(snTxt(L)?[['Serial numbers', snTxt(L).replace(/^s/,'S')]]:[])
   ].map(([k,v])=>`<div class="irow"><dt>${k}</dt><dd>${v}</dd></div>`).join('');
-  openInfo('Lens', `<div class="ihead"><div class="iart">${lensDrawing(L, 1.15)}</div><div class="ittl"><small>Nikkor ${L.type}</small><b>${L.name}</b><span>${LENS_NOTE[L.id]||''}</span></div></div>
+  openInfo('Lens', `<div class="ihead"><div class="iart">${lensDrawing(L, 2)}</div><div class="ittl"><small>Nikkor ${L.type}</small><b>${L.name}</b><span>${LENS_NOTE[L.id]||''}</span></div></div>
     <dl class="ispec">${rows}</dl>`,
     fromSheet ? ()=>{ buildLensSheet(); openSheet('lensSheet'); } : null);
 }
