@@ -2356,8 +2356,8 @@ $('infoBack').onclick = ()=>{ const b = infoReturn; infoReturn = null; const I =
 function showFilmInfo(s, fromSheet){
   if(s.none){ openInfo('No film', `<div class="ihead"><div class="ittl"><small>Digital</small><b>No film</b></div></div><p class="inote">The straight, unprocessed picture from the camera. No curve, color, grain or halation is applied.</p>`); return; }
   const rows = filmRecipe(s).map(([k,v,raw,q])=>`<div class="irow"><dt>${k}</dt><dd>${v}${q?sliderHTML(q):''}${raw?`<small>${raw}</small>`:''}</dd></div>`).join('');
-  openInfo('Film', `<div class="ihead"><div class="box ibox"></div><div class="ittl"><small>${s.maker}</small><b>${s.name}</b><span>${GROUPS[s.type]} · ISO ${s.iso}${NOW_NAME[s.id]?` · Now ${NOW_NAME[s.id]}`:''}</span></div></div>
-    <p class="inote">${s.note}</p>
+  openInfo('Film', `<div class="ihead"><div class="box ibox"></div><div class="ittl"><small>${s.maker}</small><b>${s.name}</b><span>${GROUPS[s.type]} · ISO ${s.iso}</span></div></div>
+    <p class="inote">${NOW_NAME[s.id]?`Now called ${NOW_NAME[s.id]}. `:''}${s.note}</p>
     <h3 class="isec">Recipe</h3><dl class="ispec">${rows}</dl>
     <p class="ifine">${FILM_LATITUDE[s.type]} Setting the ISO dial away from box speed pushes or pulls the roll: contrast and grain rise when pushed.</p>`, fromSheet ? ()=>{} : null, fromSheet);
   boxStyle($('infoBody').querySelector('.ibox'), s);
