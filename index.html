@@ -150,7 +150,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .lensrow b{font:600 18px/1.1 var(--num);letter-spacing:.02em}.lensrow b em{display:inline-block;vertical-align:3px;font-style:normal;font-size:12px;line-height:1;color:var(--ink);background:var(--hl-12);padding:3px 5px 2px;border-radius:4px;margin-left:10px;letter-spacing:.08em}
 .lensrow span{color:var(--mute);font-size:12px;line-height:1.35}
 .lensart svg .chrome,.lensart .chrome{fill:var(--hl-18)}
-.lensart-w{width:76px;flex:none;display:flex;justify-content:flex-start;color:var(--soft)}
+.lensart-w{width:76px;flex:none;display:flex;justify-content:center;align-items:center;color:var(--soft)}
+img.lensart{display:block;max-width:none;user-select:none;-webkit-user-drag:none}
 .lensrow.on .lensart-w{color:var(--ink)}
 @media (max-width:480px){ .brand span{display:none} .lenschip{margin-left:12px} }
 
@@ -1017,8 +1018,9 @@ body:has(#lensSheet.on, #infoSheet.on) .shootwrap{visibility:hidden}
 .ihead{display:flex;align-items:center;gap:16px;margin:4px 0 14px}
 .ihead .ibox{width:92px;height:66px;border-radius:3px}
 .ihead .ibox::after{font-size:22px;left:8px;top:calc(8px + var(--tb,0px))}
-.ihead .iart{width:92px;display:flex;justify-content:center;color:var(--ink)}
+.ihead .iart{width:92px;flex:none;display:flex;justify-content:center;color:var(--ink)}
 .ihead .iart svg{width:auto;height:96px}
+.ihead .iart img{display:block;max-width:none}
 .ittl{display:flex;flex-direction:column;gap:4px;min-width:0}
 .ittl small{font:500 12px/1 Inter,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
 .ittl b{font:600 26px/1.05 var(--num);letter-spacing:.02em;color:var(--ink)}
@@ -2145,26 +2147,11 @@ const snTxt = L => L.serial ? '#'+L.serial.replace(' to ',' to #') : (L.serialNo
 const LENS_NOTE = {'50-18':'Compact everyday normal lens.','50-14':'Faster normal lens for low light.','35-2':'Moderate wide for street and travel.',
   '28-28':'Wide for interiors and landscapes.','85-2':'Classic portrait length.','105-25':'Longer portrait lens, strong background blur.',
   '50-18p':'Japan market pancake. Tiny, all metal, and focuses closer than the export version.','105-18':'The fastest 105 of its day. Big, heavy and dreamy wide open.'};
-function lensDrawing(L){
-  // front-up elevation like a product shot: front lip, rubber focus grip, distance scale,
-  // chrome depth-of-field band, aperture ring with the meter-coupling prong, chrome mount
-  const S=L.seg, total=S.hood+S.front+S.focus+S.dist+S.dof+S.ap+S.mount, k=Math.min(86/total, 62/L.d);
-  const W=L.d*k, cx=W/2+3; let y=2, g='';
-  const band=(h,wf,cls='')=>{ const w=W*wf, x=cx-w/2, r=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${(h*k).toFixed(1)}" rx=".8"${cls}/>`; const o={x,y,w,h:h*k}; y+=h*k; g+=r; return o; };
-  if(S.hood) band(S.hood, .98);
-  band(S.front, .9);
-  const f = band(S.focus, 1);
-  for(let row=0; row<2; row++){ const ry=f.y+f.h*(.14+row*.42), rh=f.h*.3;
-    for(let i=0;i<16;i++){ const rx=f.x+f.w*(.04+i*.06); g+=`<rect x="${rx.toFixed(1)}" y="${ry.toFixed(1)}" width="${(f.w*.035).toFixed(1)}" height="${rh.toFixed(1)}" rx=".4" opacity=".6"/>`; } }
-  const dsc = band(S.dist, .96);
-  g+=`<line x1="${(cx-2).toFixed(1)}" x2="${(cx+2).toFixed(1)}" y1="${(dsc.y+dsc.h*.55).toFixed(1)}" y2="${(dsc.y+dsc.h*.55).toFixed(1)}" opacity=".7"/>`;
-  band(S.dof, .95, ' class="chrome"');
-  const ap = band(S.ap, .96);
-  for(const side of [0,1]){ const x0=side? ap.x+ap.w*.74 : ap.x+ap.w*.04, ww=ap.w*.22;
-    for(let i=0;i<5;i++){ const xx=x0+ww*i/5; g+=`<line x1="${xx.toFixed(1)}" x2="${(xx+ww/5).toFixed(1)}" y1="${(ap.y+ap.h*.2).toFixed(1)}" y2="${(ap.y+ap.h*.8).toFixed(1)}" opacity=".45"/><line x1="${(xx+ww/5).toFixed(1)}" x2="${xx.toFixed(1)}" y1="${(ap.y+ap.h*.2).toFixed(1)}" y2="${(ap.y+ap.h*.8).toFixed(1)}" opacity=".45"/>`; } }
-  g+=`<rect class="chrome" x="${(cx-W*.1).toFixed(1)}" y="${(ap.y+ap.h*.25).toFixed(1)}" width="${(W*.2).toFixed(1)}" height="${(ap.h*.55).toFixed(1)}" rx=".6"/>`;
-  band(S.mount, .7, ' class="chrome"');
-  return `<svg class="lensart" viewBox="0 0 ${(W+6).toFixed(0)} ${(y+2).toFixed(0)}" width="${(W+6).toFixed(0)}" height="${(y+2).toFixed(0)}" fill="none" stroke="currentColor" stroke-width=".9">${g}</svg>`;
+// photoreal side elevations drawn in Figma at 5 px per mm (lenses/<id>.webp); s = CSS px per mm, same for every lens so sizes compare
+const LENS_IMG = {'50-18':[315,237],'50-14':[320,282],'35-2':[315,302],'28-28':[318,270],'85-2':[320,332],'50-18p':[315,180],'105-18':[400,507],'105-25':[320,432]};
+function lensDrawing(L, s=.9){
+  const [w,h] = LENS_IMG[L.id] || [320,280];
+  return `<img class="lensart" src="lenses/${L.id}.webp" width="${(w/5*s).toFixed(1)}" height="${(h/5*s).toFixed(1)}" alt="" draggable="false" decoding="async">`;
 }
 function buildLensSheet(){
   $('lensList').innerHTML = LENSES.map(L=>`<div class="lensitem"><button class="lensrow${L===st.lens?' on':''}" data-l="${L.id}" aria-pressed="${L===st.lens}"><div class="lensart-w">${lensDrawing(L)}</div><div class="lt"><b>Nikkor ${L.name} <em>${L.type}</em></b><span>${fN(L.clicks[0])} → ${fN(L.clicks[L.clicks.length-1])} · ${L.minM} m → ∞</span><span>Made ${L.years}${snTxt(L)?' · SN '+snTxt(L):''}</span></div></button><button class="infobtn" data-li="${L.id}" aria-label="About the ${L.name} lens"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 10.8v6"/><circle cx="12" cy="7.4" r="1.1" fill="currentColor" stroke="none"/></svg></button></div>`).join('')
@@ -2494,7 +2481,7 @@ function showLensInfo(L, fromSheet){
     ['Aperture', `${fN(L.clicks[0])} to ${fN(L.clicks[L.clicks.length-1])}`], ['Closest focus', `${L.minM} m`],
     ['Mount', MOUNT_NOTE[L.type]], ['Made', L.years], ...(snTxt(L)?[['Serial numbers', snTxt(L).replace(/^s/,'S')]]:[])
   ].map(([k,v])=>`<div class="irow"><dt>${k}</dt><dd>${v}</dd></div>`).join('');
-  openInfo('Lens', `<div class="ihead"><div class="iart">${lensDrawing(L)}</div><div class="ittl"><small>Nikkor ${L.type}</small><b>${L.name}</b><span>${LENS_NOTE[L.id]||''}</span></div></div>
+  openInfo('Lens', `<div class="ihead"><div class="iart">${lensDrawing(L, 1.15)}</div><div class="ittl"><small>Nikkor ${L.type}</small><b>${L.name}</b><span>${LENS_NOTE[L.id]||''}</span></div></div>
     <dl class="ispec">${rows}</dl>`,
     fromSheet ? ()=>{ buildLensSheet(); openSheet('lensSheet'); } : null);
 }
