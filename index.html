@@ -2490,7 +2490,7 @@ function openInfo(title, html, back, sub){
   openSheet('infoSheet');
 }
 $('infoBack').onclick = ()=>{ const b = infoReturn; infoReturn = null; const I = $('infoSheet');
-  if(I.classList.contains('sub')){ I.classList.remove('on'); $('scrim').classList.remove('on'); trapClose(I); setTimeout(()=>I.classList.remove('sub'), 300); return; }  // back to the film sheet underneath
+  if(I.classList.contains('sub')){ I.classList.remove('on'); $('scrim').classList.remove('on'); trapClose(I); setTimeout(()=>{ I.style.transition='none'; I.classList.remove('sub'); $('infoBack').style.visibility='hidden'; void I.offsetHeight; I.style.transition=''; }, 320); return; }  // back to the film sheet underneath
   closeSheets(); if(b) b(); };
 function showFilmInfo(s, fromSheet){
   if(s.none){ openInfo('No film', `<div class="ihead"><div class="ittl"><small>Digital</small><b>No film</b></div></div><p class="inote">The straight, unprocessed picture from the camera. No curve, color, grain or halation is applied.</p>`); return; }
