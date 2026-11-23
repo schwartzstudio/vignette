@@ -1070,6 +1070,34 @@ body:has(#lensSheet.on, #infoSheet.on) .shootwrap{visibility:hidden}
 .ilist li::marker{color:var(--mute)}
 .ilist b{font-weight:600}
 .inote + .ilist{margin-top:10px}
+/* ===== full bleed finder: the live view runs up under the top bar (and, on phones in landscape, the left column),
+   so the dimmed area around the frame is one continuous surround instead of a band */
+@media (orientation:portrait){
+  .top{grid-area:stage!important;align-self:start;position:relative;z-index:6;pointer-events:none}
+  .top > *{pointer-events:auto}
+  /* the focus scale runs the full width on solid black; its end fades blend into that, not into the camera view */
+  .focusH.over{background:var(--bg)!important}
+  .focusH.over::before{background:linear-gradient(90deg,var(--bg) 0 52px,var(--bg-0))!important}
+  .focusH.over::after{background:linear-gradient(270deg,var(--bg) 0 76px,var(--bg-0))!important}
+}
+@media (orientation:landscape){
+  .view{display:block!important;position:relative;width:100%;flex:1 1 auto;min-height:0}
+  .finder{position:absolute!important;left:0;top:0;padding:0!important}
+  .screen{box-shadow:none!important}
+  .fmarks{display:block}
+  .focusV{position:absolute!important;margin:0!important;z-index:4;align-self:auto!important;border-radius:0!important}
+  .focusV::after{border-radius:0!important}
+}
+@media (orientation:landscape) and (max-height:520px){
+  .top{grid-area:stage!important;justify-self:start;position:relative;z-index:6;pointer-events:none}
+  .top > *{pointer-events:auto}
+  .stage{padding:0!important;background:#000}
+}
+/* sound buttons: same height as the screen buttons */
+.seg.two .scr{height:52px}
+@media (orientation:portrait){ .seg.two .scr{height:40px} }
+/* Screen and Settings: label and buttons at the same height in both panes, however long the screen note runs */
+@media (orientation:portrait){ .pane[data-pane=screen],.pane.set{justify-content:flex-start!important;padding-top:11px!important} }
 </style>
 </head>
 <body>
@@ -1998,46 +2026,48 @@ function layout(){
   const r = view.getBoundingClientRect();
   const fh = $('focusH'), mt = finder.querySelector('.meter');
   dpr = Math.min(window.devicePixelRatio||1, 2);
+  // the whole view is live and runs full bleed under the top bar; the photo area is the largest frame that fits beside
+  // the bar and the focus scale, pushed against the scale, with the rest of what the lens sees dimmed around it
+  VW = Math.round(r.width); VH = Math.round(r.height);
+  const tb = document.querySelector('.top').getBoundingClientRect();
+  const over = tb.right > r.left && tb.left < r.right && tb.bottom > r.top && tb.top < r.bottom;   // top bar laid over the view
+  const MW = mt.offsetWidth || 22, GAP = 6;
+  finder.style.width = VW+'px'; finder.style.height = VH+'px';
+  screen.style.width = VW+'px'; screen.style.height = VH+'px';
   if(!land){
-    // the whole view is live; the photo area is the largest 2:3 frame that leaves room for the focus scale and the info row
-    VW = Math.round(r.width); VH = Math.round(r.height);
-    const avail = VH - INFO_ROW - FOCUS_H - TOP_MIN;
+    // 2:3 frame between the top bar and the focus scale, which runs the full width just above the shutter row
+    const TOPH = over ? Math.max(0, Math.round(tb.bottom - r.top)) : TOP_MIN;
+    const avail = VH - INFO_ROW - FOCUS_H - TOPH - GAP;
     let w = Math.floor(Math.min(VW, avail*2/3)); w = Math.max(120, w);
     const h = Math.round(w*1.5);
     cssW = w; cssH = h;
     // centered, but nudged right when that lets the meter sit outside the frame
-    const MW = mt.offsetWidth || 22;
     FX = Math.round((VW - w)/2);
     if(FX < MW && VW - w >= MW) FX = MW;
-    FY = Math.max(TOP_MIN, VH - INFO_ROW - FOCUS_H - h);   // spare height goes above the frame, under the status bar
-    finder.style.width = VW+'px'; finder.style.height = VH+'px';
-    screen.style.width = VW+'px'; screen.style.height = VH+'px';
+    FY = VH - INFO_ROW - FOCUS_H - h;   // spare height goes above the frame, up under the top bar
     placeFrameEls(FX, FY, w, h);
     if(fh.parentNode!==finder) finder.appendChild(fh);
-    fh.classList.add('over'); fh.style.left=FX+'px'; fh.style.width=w+'px'; fh.style.top=(FY+h)+'px'; fh.style.bottom='';
-    // the meter strip sits just outside the frame's left edge when there's room, otherwise inside it
-    mt.style.left=(FX >= MW ? FX - MW : FX)+'px'; mt.style.top=FY+'px'; mt.style.bottom=(VH-FY-h)+'px';
-    canvas.width = Math.round(VW*dpr); canvas.height = Math.round(VH*dpr);
-    buildMeter(h);
+    fh.classList.add('over'); fh.style.left='0px'; fh.style.width=VW+'px'; fh.style.top=(FY+h)+'px'; fh.style.bottom='';
   } else {
-    const cs = getComputedStyle(finder);
-    const pl=parseFloat(cs.paddingLeft), pr=parseFloat(cs.paddingRight), pt=parseFloat(cs.paddingTop), pb=parseFloat(cs.paddingBottom);
-    const A = 3/2;
-    const availW = r.width - 64, availH = r.height;
-    let w = Math.min(availW - pl - pr, (availH - pt - pb)*A);
-    w = Math.max(120, w); const h = w/A;
-    cssW = Math.round(w); cssH = Math.round(h);
-    FX = 0; FY = 0; VW = cssW; VH = cssH;
-    finder.style.width = finder.style.height = '';
-    screen.style.width = cssW+'px'; screen.style.height = cssH+'px';
-    placeFrameEls(0, 0, cssW, cssH);
-    $('focusV').style.height = cssH+'px';
+    // 3:2 frame between the top bar (a column on phones) and the focus scale, which runs the full height beside the shutter
+    const fv = $('focusV'), FV = fv.offsetWidth || 52;
+    const LEFT = over ? Math.max(0, Math.round(tb.right - r.left)) : 0;
+    const availW = VW - FV - LEFT - GAP - MW;
+    let w = Math.floor(Math.min(availW, VH*3/2)); w = Math.max(120, w);
+    const h = Math.round(w*2/3);
+    cssW = w; cssH = h;
+    // on phones the spare width goes left of the frame, under the top bar; on larger screens frame and scale are centered
+    FX = over ? VW - FV - w : Math.max(MW, Math.round((VW - FV - w)/2));
+    FY = Math.round((VH - h)/2);
+    placeFrameEls(FX, FY, w, h);
+    fv.style.left = (FX + w)+'px'; fv.style.top = over ? '0px' : FY+'px'; fv.style.height = (over ? VH : h)+'px';
     if(fh.parentNode===finder) view.after(fh);
     fh.classList.remove('over'); fh.style.left=fh.style.width=fh.style.bottom=fh.style.top='';
-    mt.style.left=(pl-23)+'px'; mt.style.top=pt+'px'; mt.style.bottom=pb+'px';
-    canvas.width = Math.round(cssW*dpr); canvas.height = Math.round(cssH*dpr);
-    buildMeter(cssH);
   }
+  // the meter strip sits just outside the frame's left edge when there's room, otherwise inside it
+  mt.style.left=(FX >= MW ? FX - MW : FX)+'px'; mt.style.top=FY+'px'; mt.style.bottom=(VH-FY-cssH)+'px';
+  canvas.width = Math.round(VW*dpr); canvas.height = Math.round(VH*dpr);
+  buildMeter(cssH);
   buildOverlay(cssW, cssH);
   applyTabs();
   focusH && focusH.apply(); updateADR();
@@ -2799,7 +2829,11 @@ function makeTestScene(){
 // pin the app to what's actually on screen; iOS home screen apps can leave the page scrolled after a permission prompt
 function fitViewport(){
   const v = window.visualViewport, r = document.documentElement.style;
-  r.setProperty('--vvh', (v ? v.height : innerHeight) + 'px');
+  // run from the home screen the app owns the whole screen, but iOS can report a viewport a little short of it, which
+  // left a strip under the shutter row; never be shorter than the screen there
+  const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+  const full = standalone && screen.width && screen.height ? (innerWidth > innerHeight ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height)) : 0;
+  r.setProperty('--vvh', Math.max(v ? v.height : innerHeight, full) + 'px');
   r.setProperty('--vvt', (v ? Math.max(0, v.offsetTop) : 0) + 'px');
   if(scrollX || scrollY) scrollTo(0, 0);
 }
@@ -2914,7 +2948,7 @@ async function fire(opt={}){
   // copy the frame off the GL canvas now (cheap), then encode the JPEG off the main thread
   const snap = document.createElement('canvas'); snap.width=w; snap.height=h; snap.getContext('2d').drawImage(canvas, 0, 0);
   canvas.width=pw; canvas.height=ph;
-  if(st.srcKind==='video') upload(previewSrc());
+  if(st.srcKind==='video') uploadPreview();
   const s = st.stock;
   const geo = st.geo && Date.now()-st.geo.t < 15*60e3 ? Object.assign({}, st.geo) : null;
   const shot = {url:'', lens: st.lens.f+'mm', lensName: st.lens.name, stock:s, n: st.roll.length - st.rollStart + 1, f:N, t:m.t, expo:m.expo, portrait: A<1,
@@ -3210,6 +3244,57 @@ function previewSrc(){
   if(pcv.width!==w || pcv.height!==h){ pcv.width=w; pcv.height=h; }
   pctx.drawImage(v, 0, 0, w, h); return pcv;
 }
+// the same shrink on the GPU: the camera frame goes straight into a texture (no trip through a 2D canvas and back,
+// which stalled the finder on iPhones) and a 4-tap filter draws it into the film shader's source at about 1440px
+const PV = {prog:null, U:{}, frame:null, fb:null, last:-1, lastT:0, off:false};
+function pvProgram(){
+  if(PV.prog || PV.off) return !!PV.prog;
+  try{
+    const sh = (type,src)=>{ const s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s); if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+    const p = gl.createProgram();
+    gl.attachShader(p, sh(gl.VERTEX_SHADER, `#version 300 es
+in vec2 p; out vec2 uv; void main(){ uv = p*.5+.5; gl_Position = vec4(p,0.,1.); }`));
+    gl.attachShader(p, sh(gl.FRAGMENT_SHADER, `#version 300 es
+precision highp float; in vec2 uv; out vec4 o; uniform sampler2D uSrc; uniform vec2 uStep;
+void main(){ vec2 d = uStep*.25;
+  o = vec4((texture(uSrc,uv+vec2(-d.x,-d.y)).rgb + texture(uSrc,uv+vec2(d.x,-d.y)).rgb + texture(uSrc,uv+vec2(-d.x,d.y)).rgb + texture(uSrc,uv+vec2(d.x,d.y)).rgb)*.25, 1.); }`));
+    gl.bindAttribLocation(p, 0, 'p'); gl.linkProgram(p);
+    if(!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+    ['uSrc','uStep'].forEach(k=>PV.U[k]=gl.getUniformLocation(p,k));
+    PV.prog = p; PV.frame = accTex(gl.RGBA8, gl.UNSIGNED_BYTE, 0, 0); PV.fb = gl.createFramebuffer();
+    return true;
+  }catch(e){ console.warn(e); PV.off = true; return false; }
+}
+function uploadPreview(){
+  const v = st.video, vw = v.videoWidth, vh = v.videoHeight, L = Math.max(vw, vh);
+  if(!L) return;
+  if(L <= 1600 || !pvProgram()){ upload(previewSrc()); return; }
+  const k = 1440/L, w = Math.round(vw*k), h = Math.round(vh*k);
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, PV.frame); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, v);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, PV.fb);
+  if(st.texW!==w || st.texH!==h || !PV.sized){
+    gl.bindTexture(gl.TEXTURE_2D, tex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    if(gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE){ PV.off = true; PV.prog = null; accRestore(); upload(previewSrc()); return; }
+    st.texW = w; st.texH = h; PV.sized = true;
+  }
+  gl.viewport(0, 0, w, h); gl.useProgram(PV.prog);
+  gl.bindTexture(gl.TEXTURE_2D, PV.frame); gl.uniform1i(PV.U.uSrc, 0); gl.uniform2f(PV.U.uStep, 1/w, 1/h);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  accRestore();   // back to the film shader with its source texture bound
+  gl.generateMipmap(gl.TEXTURE_2D);
+}
+// a new camera frame to show? Only those are worth uploading and drawing; the screen refreshes at 60 or 120Hz,
+// the camera delivers 30. If the clock never moves, fall back to about 30 a second.
+function newCameraFrame(now){
+  const v = st.video;
+  if(!v || v.readyState < 2) return false;
+  if(v.currentTime !== PV.last || now - PV.lastT > 33){ PV.last = v.currentTime; PV.lastT = now; return true; }
+  return false;
+}
+// full height sheets cover the finder behind blurred glass: hold the last frame so the blur isn't redone every frame
+const fullSheetOpen = ()=>document.body.classList.contains('panel-full') || !!document.querySelector('#lensSheet.on, #infoSheet.on');
 /* ========================================================= loop */
 let lastT = performance.now(), frameSeed = 1, drawKey = '', drawSrc = null, lastDraw = 0;
 const introEl = $('intro');   // lbEl (the photo viewer) is declared with the viewer code
@@ -3232,15 +3317,17 @@ function loop(now){
   // shutter open on a long exposure: the mirror is up and the finder is dark, so the GPU only adds frames to the average
   if(ACC.on){ accAdd(); requestAnimationFrame(loop); return; }
   if(st.source){
-    if(st.srcKind==='video' && st.video.readyState >= 2) upload(previewSrc());
+    const held = fullSheetOpen();
+    const fresh = !held && st.srcKind==='video' && newCameraFrame(now);
+    if(fresh) uploadPreview();
     sampleMeter(now);
     const m = computeExposure(); st.metered = m;
-    if(!st.busy){
-      // live video changes every frame; a still source only needs a redraw when the exposure or a setting moves
+    if(!st.busy && !held){
+      // redraw for a new camera frame, or when the exposure or a setting moves
       // (plus a slow refresh so anything not in the key still catches up)
-      const key = st.srcKind==='video' ? '' : [canvas.width, canvas.height, m.expo.toFixed(3), st.stock.id, st.isoSet, st.ap, st.focus.toFixed(3),
-        st.screen, st.bypass, st.lens && st.lens.id, TARGET_INV, st.dofPrev].join('|');
-      if(st.srcKind==='video' || key!==drawKey || st.source!==drawSrc || now-lastDraw>250){
+      const key = [canvas.width, canvas.height, m.expo.toFixed(3), st.stock.id, st.isoSet, st.ap, st.focus.toFixed(3),
+        st.screen, st.bypass, st.lens && st.lens.id, TARGET_INV, st.dofPrev, st.facing].join('|');
+      if(fresh || key!==drawKey || st.source!==drawSrc || now-lastDraw>250){
         // stopped down, the finder shows the taking aperture's depth of field and gets darker, as through the real lever;
         // the darkening stops at 3 stops so the finder stays usable at f/16
         const fN0 = APERTURES[0], fNv = st.dofPrev ? APERTURES[st.ap] : fN0, dim = Math.min(3, 2*Math.log2(fNv/fN0));
