@@ -1025,6 +1025,8 @@ body.panel-full #filmList .group{display:grid;gap:6px}
 .sheet.infosheet.sub{transition:transform .32s var(--ease-out),visibility 0s .32s}
 .sheet.infosheet.sub.on{transition:transform .32s var(--ease-out)}
 body:has(#infoSheet.sub.on) .scrim{background:rgba(0,0,0,.35)!important}
+/* the list the detail was opened from slides off to the left, and back in on Back */
+html body.info-pushed #lensSheet.on,html body.panel-open.info-pushed .panel{transform:translateX(calc(-100% - 24px))!important;transition:transform .32s var(--ease-out)!important}
 /* full height sheets cover the shutter row; keep it from showing through the glass */
 body:has(#lensSheet.on, #infoSheet.on) .shootwrap{visibility:hidden}
 /* ===== lens list with info buttons ===== */
@@ -1037,7 +1039,7 @@ body:has(#lensSheet.on, #infoSheet.on) .shootwrap{visibility:hidden}
 .sheet.infosheet,#lensSheet{top:calc(8px + env(safe-area-inset-top))!important;max-height:none!important;display:flex;flex-direction:column}
 .sheet.infosheet .body,#lensSheet .body{flex:1 1 auto;min-height:0;overflow:auto}
 /* same footprint as the full height film sheet, at every width */
-.sheet.infosheet,#lensSheet{left:8px!important;right:8px!important;width:auto!important;margin-left:0!important;bottom:calc(8px + env(safe-area-inset-bottom))!important}
+.sheet.infosheet,#lensSheet{left:8px!important;right:8px!important;width:auto!important;margin-left:0!important;bottom:calc(8px + var(--sab))!important}
 .ihead{display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;margin:10px 0 18px}
 .ihead .ibox{width:176px;height:128px;border-radius:4px}
 .ihead .ibox::after{font-size:40px;left:14px;top:calc(14px + var(--tb,0px))}
@@ -1087,18 +1089,34 @@ body:has(#lensSheet.on, #infoSheet.on) .shootwrap{visibility:hidden}
   .focusV::after{border-radius:0!important}
 }
 @media (orientation:landscape) and (max-height:520px){
+  /* shutter column sized to what it holds (film name, then the 84px shutter stack), so the name can't spill onto the focus bar */
+  .shootbar{width:84px!important;flex:none}
+  .shootwrap{width:calc(144px + env(safe-area-inset-right))!important;box-sizing:border-box}
   .top{grid-area:stage!important;justify-self:start;position:relative;z-index:6;pointer-events:none}
   .top > *{pointer-events:auto}
   .stage{padding:0!important;background:#000}
 }
+/* portrait: the photo runs up under the top bar; only the status bar strip stays black */
+#satProbe{position:fixed;left:0;top:0;width:0;height:env(safe-area-inset-top);visibility:hidden;pointer-events:none}
+@media (orientation:portrait){
+  .stage::before{content:"";position:absolute;left:0;right:0;top:0;height:env(safe-area-inset-top);background:#000;z-index:5;pointer-events:none}
+  .top .lenschip{text-shadow:0 1px 3px rgba(0,0,0,.7),0 0 10px rgba(0,0,0,.35)}
+}
 /* sound buttons: same height as the screen buttons */
 .seg.two .scr{height:52px}
 @media (orientation:portrait){ .seg.two .scr{height:40px} }
+/* Hold to preview: 40px like the others, with room below the aperture scale in the full sheet */
+.seg.one .scr{height:40px}
+body.panel-full .seg.one{margin-top:12px}
+/* buttons on the glass let a little of it through, like the film tiles */
+.panel .scr{background:var(--tile)!important;border-color:var(--tile-line)!important}
+.panel .scr.on{background:var(--tile-on)!important;border-color:var(--tile-line-on)!important}
 /* Screen and Settings: label and buttons at the same height in both panes, however long the screen note runs */
 @media (orientation:portrait){ .pane[data-pane=screen],.pane.set{justify-content:flex-start!important;padding-top:11px!important} }
 </style>
 </head>
 <body>
+<div id="satProbe" aria-hidden="true"></div>
 <div id="app">
   <header class="top">
     <div class="brand"><h1 class="mark">VIGNETTE</h1></div>
@@ -2031,16 +2049,17 @@ function layout(){
   finder.style.width = VW+'px'; finder.style.height = VH+'px';
   screen.style.width = VW+'px'; screen.style.height = VH+'px';
   if(!land){
-    // 2:3 frame between the top bar and the focus scale, which runs the full width just above the shutter row
-    const TOPH = over ? Math.max(0, Math.round(tb.bottom - r.top)) : TOP_MIN;
-    const avail = VH - INFO_ROW - FOCUS_H - TOPH - GAP;
+    // 2:3 frame from just under the status bar down to the focus scale, which runs the full width above the shutter row;
+    // the lens and frame counter sit over the top of the photo, like the camera app's controls
+    const TOPS = over ? $('satProbe').offsetHeight : TOP_MIN;
+    const avail = VH - INFO_ROW - FOCUS_H - TOPS;
     let w = Math.floor(Math.min(VW, avail*2/3)); w = Math.max(120, w);
     const h = Math.round(w*1.5);
     cssW = w; cssH = h;
     // centered, but nudged right when that lets the meter sit outside the frame
     FX = Math.round((VW - w)/2);
     if(FX < MW && VW - w >= MW) FX = MW;
-    FY = VH - INFO_ROW - FOCUS_H - h;   // spare height goes above the frame, up under the top bar
+    FY = VH - INFO_ROW - FOCUS_H - h;   // any spare height goes above the frame
     placeFrameEls(FX, FY, w, h);
     if(fh.parentNode!==finder) finder.appendChild(fh);
     fh.classList.add('over'); fh.style.left='0px'; fh.style.width=VW+'px'; fh.style.top=(FY+h)+'px'; fh.style.bottom='';
@@ -2060,10 +2079,12 @@ function layout(){
     if(fh.parentNode===finder) view.after(fh);
     fh.classList.remove('over'); fh.style.left=fh.style.width=fh.style.bottom=fh.style.top='';
   }
-  // the meter strip sits just outside the frame's left edge when there's room, otherwise inside it
-  mt.style.left=(FX >= MW ? FX - MW : FX)+'px'; mt.style.top=FY+'px'; mt.style.bottom=(VH-FY-cssH)+'px';
+  // the meter strip sits just outside the frame's left edge when there's room, otherwise inside it,
+  // and starts below the top bar when the frame runs up under it
+  const MT = !land && over ? Math.max(FY, Math.round(tb.bottom - r.top) + 4) : FY;
+  mt.style.left=(FX >= MW ? FX - MW : FX)+'px'; mt.style.top=MT+'px'; mt.style.bottom=(VH-FY-cssH)+'px';
   canvas.width = Math.round(VW*dpr); canvas.height = Math.round(VH*dpr);
-  buildMeter(cssH);
+  buildMeter(FY + cssH - MT);
   buildOverlay(cssW, cssH);
   applyTabs();
   focusH && focusH.apply(); updateADR();
@@ -2506,14 +2527,20 @@ const FILM_LATITUDE = {neg:'Color negative film has wide latitude. It handles ov
   bw:'Black and white film is forgiving and responds well to pushing and pulling.'};
 let infoReturn = null;
 function openInfo(title, html, back, sub){
-  $('infoSheet').classList.toggle('sub', !!sub);
+  const I = $('infoSheet');
+  if(!!sub !== I.classList.contains('sub') && !I.classList.contains('on')){
+    // move it to its starting side (right for a detail, below otherwise) without animating, so it slides in from there
+    I.style.transition='none'; I.classList.toggle('sub', !!sub); void I.offsetHeight; I.style.transition='';
+  } else I.classList.toggle('sub', !!sub);
   $('infoTitle').textContent = title; $('infoBody').innerHTML = html; $('infoBody').scrollTop = 0;
   infoReturn = back || null; $('infoBack').style.visibility = back ? 'visible' : 'hidden';
-  document.querySelectorAll('.sheet.on').forEach(x=>{ if(x.id!=='infoSheet') x.classList.remove('on'); });
+  // opened from a list (the full film sheet or the lens sheet): the list slides off to the left as the detail slides in
+  if(sub) document.body.classList.add('info-pushed');
+  else document.querySelectorAll('.sheet.on').forEach(x=>{ if(x.id!=='infoSheet') x.classList.remove('on'); });
   openSheet('infoSheet');
 }
 $('infoBack').onclick = ()=>{ const b = infoReturn; infoReturn = null; const I = $('infoSheet');
-  if(I.classList.contains('sub')){ I.classList.remove('on'); $('scrim').classList.remove('on'); trapClose(I); setTimeout(()=>{ I.style.transition='none'; I.classList.remove('sub'); $('infoBack').style.visibility='hidden'; void I.offsetHeight; I.style.transition=''; }, 320); return; }  // back to the film sheet underneath
+  if(I.classList.contains('sub')){ I.classList.remove('on'); document.body.classList.remove('info-pushed'); if(!$('lensSheet').classList.contains('on')) $('scrim').classList.remove('on'); trapClose(I); setTimeout(()=>{ I.style.transition='none'; I.classList.remove('sub'); $('infoBack').style.visibility='hidden'; void I.offsetHeight; I.style.transition=''; }, 320); return; }  // back to the film sheet underneath
   closeSheets(); if(b) b(); };
 function showFilmInfo(s, fromSheet){
   if(s.none){ openInfo('No film', `<div class="ihead"><div class="ittl"><small>Digital</small><b>No film</b></div></div><p class="inote">The straight, unprocessed picture from the camera. No curve, color, grain or halation is applied.</p>`); return; }
@@ -2533,10 +2560,10 @@ function showLensInfo(L, fromSheet){
   ].map(([k,v])=>`<div class="irow"><dt>${k}</dt><dd>${v}</dd></div>`).join('');
   openInfo('Lens', `<div class="ihead"><div class="iart">${lensDrawing(L, 2)}</div><div class="ittl"><small>Nikkor ${L.type}</small><b>${L.name}</b><span>${LENS_NOTE[L.id]||''}</span></div></div>
     <dl class="ispec">${rows}</dl>`,
-    fromSheet ? ()=>{ buildLensSheet(); openSheet('lensSheet'); } : null);
+    fromSheet ? ()=>{} : null, fromSheet);
 }
 function openSheet(id){ $('scrim').classList.add('on'); $(id).classList.add('on'); trapOpen($(id)); }
-function closeSheets(){ const I=$('infoSheet'); if(I.classList.contains('on') && I.classList.contains('sub')){ I.classList.remove('sub'); document.body.classList.remove('panel-open'); setTimeout(layout,300); } $('scrim').classList.remove('on'); document.querySelectorAll('.sheet').forEach(x=>{ if(!x.classList.contains('on')) return; x.classList.remove('on'); trapClose(x); }); }
+function closeSheets(){ const I=$('infoSheet'); document.body.classList.remove('info-pushed'); if(I.classList.contains('on') && I.classList.contains('sub')){ I.classList.remove('sub'); document.body.classList.remove('panel-open'); setTimeout(layout,300); } $('scrim').classList.remove('on'); document.querySelectorAll('.sheet').forEach(x=>{ if(!x.classList.contains('on')) return; x.classList.remove('on'); trapClose(x); }); }
 document.addEventListener('keydown', e=>{
   if(e.key==='Escape'){ // close whatever is on top
     const c=$('lbConfirm');
