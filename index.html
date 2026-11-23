@@ -286,8 +286,6 @@ body.panel-open .status .ic-open{display:none} body.panel-open .status .ic-close
 
 
 
-.lensseg[hidden],.lab[hidden]{display:none}
-.lensseg{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:2px}
 .lens{height:40px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--mute);font:600 15px/1 var(--num);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
 .lens small{font:500 10px/1 var(--num);color:var(--dim)}
 .lens.on{border-color:var(--edge-hi);background:var(--panel);color:var(--ink)}.lens.on small{color:var(--accent-text)}
@@ -1164,8 +1162,6 @@ body:has(#lensSheet.on, #infoSheet.on) .shootwrap{visibility:hidden}
       <div class="dial" id="shutDial"></div>
     </div>
     <div class="pane ctl" data-pane="aperture" id="paneAperture">
-      <div class="lab" hidden>Lens <i id="lensLab"></i></div>
-      <div class="lensseg" id="lensSeg" hidden></div>
       <div class="lab">Aperture <i id="apLab"></i></div>
       <div class="dial" id="apDial"></div>
       <div class="seg one"><button class="scr" id="dofBtn" aria-pressed="false" aria-label="Depth of field preview. Hold to stop the lens down.">Hold to preview</button></div>
@@ -2225,8 +2221,6 @@ function buildLensSheet(){
 }
 $('lensChip').onclick = ()=>{ buildLensSheet(); openSheet('lensSheet'); };
 function buildLenses(){
-  $('lensSeg').innerHTML = LENSES.map(L=>`<button class="lens${L===st.lens?' on':''}" data-l="${L.id}">${L.f}<small>${fN(L.clicks[0])}</small></button>`).join('');
-  $('lensSeg').querySelectorAll('.lens').forEach(b=>b.onclick=()=>setLens(LENSES.find(L=>L.id===b.dataset.l)));
 }
 function focusItems(){
   const minM = st.lens.minM, ft = st.unit==='ft', out=[]; let last=-9;
@@ -2322,7 +2316,6 @@ function syncUI(){
   $('fpIso').textContent = 'ISO '+st.isoSet;
   $('tvShut').textContent = sp.mode==='A' ? 'Auto' : sp.mode ? sp.l : (sp.t>=1 ? sp.l+'"' : '1/'+sp.l);
   $('tvAp').textContent = fN(APERTURES[st.ap]); syncAp();
-  $('lensLab').textContent = 'Nikkor '+st.lens.name+' '+st.lens.type;
   $('lensChipTxt').textContent = st.lens.name;
   $('apLab').textContent = fN(APERTURES[st.ap]) + (st.dofPrev ? ' · preview' : '');
   $('dofBtn').classList.toggle('on', !!st.dofPrev); $('dofBtn').setAttribute('aria-pressed', !!st.dofPrev);
