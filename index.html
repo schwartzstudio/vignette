@@ -1035,6 +1035,7 @@ body:has(#lensSheet.on, #infoSheet.on) .shootwrap{visibility:hidden}
 .itrack .imid{position:absolute;top:-3px;bottom:-3px;width:1px;margin-left:-.5px;background:rgba(255,255,255,.35)}
 .itrack .ithumb{position:absolute;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.5)}
 .ifine{margin:16px 0 0;font-size:12.5px;line-height:1.45;color:var(--mute)}
+.film .d .now{font-weight:600;color:var(--ink)}
 </style>
 </head>
 <body>
@@ -1328,6 +1329,8 @@ const makerRank = m => { const i = MAKER_RANK.indexOf(m); return i < 0 ? MAKER_R
 STOCKS.sort((a,b)=>makerRank(a.maker)-makerRank(b.maker) || a.maker.localeCompare(b.maker) || a.iso-b.iso || a.name.localeCompare(b.name));
 const DEF_STOCK = STOCKS.find(s=>s.id==='portra400');
 
+// Eastman Kodak's own names since 2025-26; the app keeps the familiar names and mentions the new one
+const NOW_NAME = {portra160:'Ektacolor Pro 160',portra400:'Ektacolor Pro 400',portra800:'Ektacolor Pro 800',tmax100:'Ektapan 100',tmax400:'Ektapan 400',tmax3200:'Ektapan P3200',proimage100:'Kodacolor 100',colorplus200:'Kodacolor 200'};
 const SPEEDS = [
   {l:'A',mode:'A'},
   ...[4000,2000,1000,500,250,125,60,30,15,8,4,2].map(n=>({l:String(n),t:1/n})),
@@ -2241,7 +2244,7 @@ function edgeSVG(r, x0){
 /* ========================================================= film sheet */
 function filmButton(s){
   const b=document.createElement('button'); b.className='film'+(s===st.stock?' on':''); b.dataset.id=s.id; b.setAttribute('aria-pressed', s===st.stock);
-  b.innerHTML=`<div class="box"></div><div class="txt"><span class="mk">${s.none?'Digital':s.maker}</span><span class="nm">${s.name}</span><div class="d">${s.note}</div></div><div class="iso">${s.none?'':s.iso}</div>`;
+  b.innerHTML=`<div class="box"></div><div class="txt"><span class="mk">${s.none?'Digital':s.maker}</span><span class="nm">${s.name}</span><div class="d">${NOW_NAME[s.id]?`<b class="now">Now ${NOW_NAME[s.id]}.</b> `:''}${s.note}</div></div><div class="iso">${s.none?'':s.iso}</div>`;
   const bx=b.querySelector('.box');
   if(s.none){ bx.classList.add('none'); bx.innerHTML='<b>OFF</b>'; } else boxStyle(bx, s);
   const fi=document.createElement('span'); fi.className='finfo'; fi.setAttribute('role','button'); fi.setAttribute('aria-label',`About ${s.name}`);
@@ -2353,7 +2356,7 @@ $('infoBack').onclick = ()=>{ const b = infoReturn; infoReturn = null; const I =
 function showFilmInfo(s, fromSheet){
   if(s.none){ openInfo('No film', `<div class="ihead"><div class="ittl"><small>Digital</small><b>No film</b></div></div><p class="inote">The straight, unprocessed picture from the camera. No curve, color, grain or halation is applied.</p>`); return; }
   const rows = filmRecipe(s).map(([k,v,raw,q])=>`<div class="irow"><dt>${k}</dt><dd>${v}${q?sliderHTML(q):''}${raw?`<small>${raw}</small>`:''}</dd></div>`).join('');
-  openInfo('Film', `<div class="ihead"><div class="box ibox"></div><div class="ittl"><small>${s.maker}</small><b>${s.name}</b><span>${GROUPS[s.type]} · ISO ${s.iso}</span></div></div>
+  openInfo('Film', `<div class="ihead"><div class="box ibox"></div><div class="ittl"><small>${s.maker}</small><b>${s.name}</b><span>${GROUPS[s.type]} · ISO ${s.iso}${NOW_NAME[s.id]?` · Now ${NOW_NAME[s.id]}`:''}</span></div></div>
     <p class="inote">${s.note}</p>
     <h3 class="isec">Recipe</h3><dl class="ispec">${rows}</dl>
     <p class="ifine">${FILM_LATITUDE[s.type]} Setting the ISO dial away from box speed pushes or pulls the roll: contrast and grain rise when pushed.</p>`, fromSheet ? ()=>{} : null, fromSheet);
