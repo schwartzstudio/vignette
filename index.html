@@ -2786,9 +2786,8 @@ $('fileIn').onchange = e=>{ const f=e.target.files[0]; if(f){ loadPhoto(f); hide
 function camFail(e){
   console.warn(e);
   const denied = e && (e.name==='NotAllowedError' || e.name==='SecurityError');
-  toast(denied ? 'Camera access is off, so this is a sample scene. Allow it in site settings, then reload.'
-               : 'No camera found, so this is a sample scene.', 5200);
-  if(!st.source){ setImage(makeSample(), 'Sample', 13); }
+  toast(denied ? 'Camera access is off. Allow it in site settings, then reload.' : 'No camera found.', 5200);
+  if(!st.source){ setImage(makeGray(), 'No camera', 13); }
 }
 async function chooseSource(){
   ensureAudio();
@@ -2799,51 +2798,11 @@ function hideIntro(){ try{ localStorage.setItem('vignette.onboarded','1'); }catc
 // while the welcome is up, the camera behind it is out of the Tab order and hidden from screen readers
 { const sync=()=>{ $('app').inert = !$('intro').classList.contains('off'); }; new MutationObserver(sync).observe($('intro'), {attributes:true, attributeFilter:['class']}); sync(); }
 
-/* procedural test scene: sky, sun, ColorChecker, step wedge, plants, red ball */
-// Big Sur, Bixby Bridge. Photo by George Cox on Unsplash (Unsplash License)
+// welcome cards: Big Sur, Bixby Bridge. Photo by George Cox on Unsplash (Unsplash License)
 const SAMPLE_PHOTO = 'sample.jpg';   // published beside the page so it isn't parsed with the script
-let samplePhotoImg = null;
-if(SAMPLE_PHOTO){ samplePhotoImg = new Image(); samplePhotoImg.src = SAMPLE_PHOTO; }
-function makeSample(){
-  if(samplePhotoImg && samplePhotoImg.complete && samplePhotoImg.naturalWidth){
-    const im=samplePhotoImg, k=Math.min(1, 2400/Math.max(im.naturalWidth, im.naturalHeight));
-    const c=document.createElement('canvas'); c.width=Math.round(im.naturalWidth*k); c.height=Math.round(im.naturalHeight*k);
-    const x=c.getContext('2d'); x.drawImage(im,0,0,c.width,c.height);
-    return c;
-  }
-  return makeTestScene();
-}
-function makeTestScene(){
-  const W=1800,H=1200,c=document.createElement('canvas'); c.width=W;c.height=H; const x=c.getContext('2d');
-  let g=x.createLinearGradient(0,0,0,640); g.addColorStop(0,'#4f86c6'); g.addColorStop(1,'#cfe0ef'); x.fillStyle=g; x.fillRect(0,0,W,640);
-  // distant hills
-  x.fillStyle='#7d9a7a'; x.beginPath(); x.moveTo(0,600); for(let i=0;i<=W;i+=60) x.lineTo(i, 560+Math.sin(i*0.006)*40+Math.sin(i*0.017)*16); x.lineTo(W,640); x.lineTo(0,640); x.fill();
-  // sun with glow
-  g=x.createRadialGradient(1480,200,10,1480,200,260); g.addColorStop(0,'rgba(255,255,250,1)'); g.addColorStop(.25,'rgba(255,250,230,.9)'); g.addColorStop(1,'rgba(255,240,210,0)');
-  x.fillStyle=g; x.fillRect(1200,0,600,480); x.fillStyle='#fff'; x.beginPath(); x.arc(1480,200,60,0,7); x.fill();
-  // table
-  g=x.createLinearGradient(0,640,0,H); g.addColorStop(0,'#9a6a46'); g.addColorStop(1,'#4b2f1e'); x.fillStyle=g; x.fillRect(0,640,W,H-640);
-  for(let i=0;i<40;i++){ x.strokeStyle=`rgba(40,20,10,${.05+Math.random()*.08})`; x.lineWidth=1+Math.random()*3; x.beginPath(); const y=650+Math.random()*540; x.moveTo(0,y); x.bezierCurveTo(600,y+Math.random()*20-10,1200,y+Math.random()*20-10,W,y); x.stroke(); }
-  // ColorChecker
-  const cc=['#735244','#c29682','#627a9d','#576c43','#8580b1','#67bdaa','#d67e2c','#505ba6','#c15a63','#5e3c6c','#9dbc40','#e0a32e','#383d96','#469449','#af363c','#e7c71f','#bb5695','#0885a1','#f3f3f2','#c8c8c8','#a0a0a0','#7a7a79','#555555','#343434'];
-  x.save(); x.translate(110,300); x.fillStyle='#111'; x.fillRect(0,0,6*104+16,4*104+16);
-  cc.forEach((col,i)=>{ x.fillStyle=col; x.fillRect(12+(i%6)*104, 12+Math.floor(i/6)*104, 92, 92); }); x.restore();
-  // step wedge
-  for(let i=0;i<11;i++){ const v=Math.round(255*Math.pow(i/10,1/2.2)); x.fillStyle=`rgb(${v},${v},${v})`; x.fillRect(110+i*60, 1040, 60, 90); }
-  x.strokeStyle='#000'; x.lineWidth=3; x.strokeRect(110,1040,660,90);
-  // plant
-  x.save(); x.translate(1180,760);
-  x.fillStyle='#b0563a'; x.beginPath(); x.moveTo(-90,60); x.lineTo(90,60); x.lineTo(70,250); x.lineTo(-70,250); x.fill();
-  for(let i=0;i<26;i++){ const a=-Math.PI/2+(Math.random()-.5)*2.4, L=120+Math.random()*200; x.save(); x.rotate(a+Math.PI/2); x.fillStyle=['#2f6b2a','#4f8f3a','#6fae4a','#3c7d34'][i%4];
-    x.beginPath(); x.ellipse(0,-L/2,18+Math.random()*12,L/2,0,0,7); x.fill(); x.restore(); }
-  x.restore();
-  // red ball and skin tone sphere
-  const ball=(cx,cy,r,c1,c2)=>{ const gr=x.createRadialGradient(cx-r*.35,cy-r*.4,r*.1,cx,cy,r); gr.addColorStop(0,c1); gr.addColorStop(1,c2); x.fillStyle=gr; x.beginPath(); x.arc(cx,cy,r,0,7); x.fill(); };
-  ball(1520,920,110,'#ff6a5e','#7a0f12'); ball(900,880,85,'#f2c7a8','#8a5a40'); ball(1640,1090,55,'#7fc6ff','#123a6b');
-  // white card with type
-  x.fillStyle='#f4f1ea'; x.fillRect(830,320,260,300);
-  return c;
-}
+const samplePhotoImg = new Image(); samplePhotoImg.src = SAMPLE_PHOTO;
+// no camera: an even mid gray in the finder, so the controls still work
+function makeGray(){ const c=document.createElement('canvas'); c.width=300; c.height=200; const x=c.getContext('2d'); x.fillStyle='#777'; x.fillRect(0,0,300,200); return c; }
 
 /* ========================================================= viewport */
 // pin the app to what's actually on screen; iOS home screen apps can leave the page scrolled after a permission prompt

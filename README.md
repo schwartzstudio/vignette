@@ -36,7 +36,7 @@ npx serve .
 
 - `index.html`: the whole app
 - `manifest.webmanifest`: home screen / install settings
-- `sample.jpg`: the sample scene shown on the welcome screen and when no camera is available
+- `sample.jpg`: the photo on the welcome screen cards
 - `lenses/`: lens pictures for the lens menu and lens details
 - `sounds/`: shutter release and film wind, recorded from a Nikon FE2
 - `apple-touch-icon.png`, `favicon-32.png`, `icon/`: app icons, including the 1024px source
