@@ -310,10 +310,11 @@ body.panel-full .grab::after{content:none}   /* the full sheet's handle is alrea
 .box::before{content:"";position:absolute;left:0;right:0;bottom:0;height:30%;background:var(--b2)}
 .box::after{content:attr(data-iso);position:absolute;left:4px;top:calc(4px + var(--tb,0px));font:700 12px/1 var(--num);color:var(--b3,var(--black))}
 .box i{position:absolute;left:0;right:0;top:0;height:var(--tb,0px);background:var(--b4,transparent)}
+.box u{position:absolute;left:0;right:0;bottom:30%;height:var(--ab,0px);background:var(--b5,transparent)}
 .box.none{background:transparent!important;box-shadow:none;border:1px dashed var(--tick-mark)}
 .box.none::before{display:none}
 .box.none::after{content:'';}
-.box.none i{display:none}
+.box.none i,.box.none u{display:none}
 .box.none b{position:absolute;inset:0;display:grid;place-items:center;font:600 10px/1 var(--num);letter-spacing:.1em;color:var(--mute)}
 .group h2{font:500 11px/1 Inter;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin:14px 8px 6px}
 .film{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:8px;border-radius:10px}
@@ -394,8 +395,7 @@ body.panel-full .grab::after{content:none}   /* the full sheet's handle is alrea
 .filmpill{display:flex;align-items:center;gap:8px;height:30px;padding:0 14px 0 8px;margin:2px 0 8px;border-radius:15px;border:1px solid var(--line);background:var(--bg);
   font:600 14px/1 var(--num);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);max-width:calc(100vw - 40px);white-space:nowrap}
 .filmpill .fp-can{width:24px;height:17px;flex:none;border-radius:2px}
-.filmpill .fp-can::after{font-size:8px;left:2px;top:calc(2px + var(--tb,0px)/2)}
-.filmpill .fp-can i{height:calc(var(--tb,0px)/2)}
+.filmpill .fp-can::after{font-size:8px;left:2px;top:calc(2px + var(--tb,0px))}
 .filmpill .fp-can.none b{font-size:6px}
 .filmpill .fp-mk{color:var(--mute);margin-right:4px}
 .filmpill .fp-txt{overflow:hidden;text-overflow:ellipsis}
@@ -1216,53 +1216,53 @@ const SHORT = {proimage100:'Pro Image 100',phoenix:'Phoenix 125',phoenix2:'Phoen
   e100:'E100',provia100f:'Provia 100F',tmax3200:'P3200',ladygrey:'Lady Grey'};
 const STOCKS = [
   // color negative
-  S({id:'portra160',xu:[-0.015, 0.025, 0.02],xo:[0.012, 0.008, -0.012],type:'neg',maker:'Kodak',name:'Portra 160',iso:160,box:['#5f4fa0','#f2b31b','#fff'],note:'Finest grain Portra. Soft, slightly muted color made for skin. Happiest in bright light.',
+  S({id:'portra160',xu:[-0.015, 0.025, 0.02],xo:[0.012, 0.008, -0.012],type:'neg',maker:'Kodak',name:'Portra 160',iso:160,box:['#635db5','#fbb616','#fff'],note:'Finest grain Portra. Soft, slightly muted color made for skin. Happiest in bright light.',
      c:.88,sat:.86,wb:[1.03,1,.96],chanOff:[.04,0,-.04],hiT:[.012,.006,-.01],shT:[0,.004,.01],grain:.016,gsize:.85,hal:.04}),
-  S({id:'portra400',xu:[-0.015, 0.025, 0.02],xo:[0.012, 0.008, -0.012],type:'neg',maker:'Kodak',name:'Portra 400',iso:400,box:['#5f4fa0','#f2b31b','#fff'],note:'Natural skin, moderate contrast and saturation. Shrugs off overexposure.',
+  S({id:'portra400',xu:[-0.015, 0.025, 0.02],xo:[0.012, 0.008, -0.012],type:'neg',maker:'Kodak',name:'Portra 400',iso:400,box:['#6362ac','#fbb616','#fff'],note:'Natural skin, moderate contrast and saturation. Shrugs off overexposure.',
      c:.93,sat:.92,wb:[1.04,1,.95],chanOff:[.05,0,-.05],hiT:[.016,.008,-.014],shT:[-.004,.004,.012],grain:.026,gsize:1}),
-  S({id:'portra800',xu:[-0.015, 0.025, 0.02],xo:[0.014, 0.008, -0.014],type:'neg',maker:'Kodak',name:'Portra 800',iso:800,box:['#5f4fa0','#f2b31b','#fff'],note:'Low light Portra with a little more contrast and punch than 400.',
+  S({id:'portra800',xu:[-0.015, 0.025, 0.02],xo:[0.014, 0.008, -0.014],type:'neg',maker:'Kodak',name:'Portra 800',iso:800,box:['#534e9d','#fbb616','#fff'],note:'Low light Portra with a little more contrast and punch than 400.',
      c:.98,sat:.98,wb:[1.05,1,.93],chanOff:[.06,0,-.06],hiT:[.02,.01,-.016],grain:.04,gsize:1.2}),
-  S({id:'ektar100',xu:[-0.02, 0, 0.035],xo:[0.022, 0, -0.01],type:'neg',maker:'Kodak',name:'Ektar 100',iso:100,box:['#d9431f','#141414','#fff'],note:'Vivid, contrasty and ultra fine grained. Great for landscapes, can push skin red.',
+  S({id:'ektar100',xu:[-0.02, 0, 0.035],xo:[0.022, 0, -0.01],type:'neg',maker:'Kodak',name:'Ektar 100',iso:100,box:['#d6402a','#fbb616','#fff','#fbb616'],note:'Vivid, contrasty and ultra fine grained. Great for landscapes, can push skin red.',
      c:1.1,sat:1.28,wb:[1.02,1,.98],chanC:[1.06,1,1.08],chanOff:[.06,0,.04],black:[.02,.02,.03],grain:.011,gsize:.8}),
-  S({id:'gold200',xu:[-0.005, 0.02, -0.02],xo:[0.02, 0.012, -0.025],type:'neg',maker:'Kodak',name:'Gold 200',iso:200,box:['#f9c21a','#141414','#141414'],note:'Warm, sunny snapshot look. Makes dull days feel brighter.',
+  S({id:'gold200',xu:[-0.005, 0.02, -0.02],xo:[0.02, 0.012, -0.025],type:'neg',maker:'Kodak',name:'Gold 200',iso:200,box:['#fbb616','#a422aa','#141414'],note:'Warm, sunny snapshot look. Makes dull days feel brighter.',
      c:1.04,sat:1.12,wb:[1.08,1.02,.88],chanC:[1,1.02,.95],hiT:[.028,.016,-.03],grain:.034,gsize:1.1}),
-  S({id:'colorplus200',xu:[-0.005, 0.02, -0.02],xo:[0.02, 0.012, -0.025],type:'neg',maker:'Kodak',name:'ColorPlus 200',iso:200,box:['#f9c21a','#e5532a','#141414'],note:'Budget Kodak with a soft, vintage feel. Close cousin of Gold.',
+  S({id:'colorplus200',xu:[-0.005, 0.02, -0.02],xo:[0.02, 0.012, -0.025],type:'neg',maker:'Kodak',name:'ColorPlus 200',iso:200,box:['#fbb616','#e6563b','#141414'],note:'Budget Kodak with a soft, vintage feel. Close cousin of Gold.',
      c:1,sat:1.04,wb:[1.06,1.03,.9],hiT:[.02,.018,-.02],shT:[0,.006,0],grain:.04,gsize:1.15,black:[.045,.045,.045]}),
-  S({id:'ultramax400',xu:[-0.005, 0.02, -0.02],xo:[0.02, 0.012, -0.025],type:'neg',maker:'Kodak',name:'UltraMax 400',iso:400,box:['#f9c21a','#2156a5','#141414'],note:'Warm, saturated everyday film. Grainier than the 200s, likes extra light.',
+  S({id:'ultramax400',xu:[-0.005, 0.02, -0.02],xo:[0.02, 0.012, -0.025],type:'neg',maker:'Kodak',name:'UltraMax 400',iso:400,box:['#fbb616','#5a93c8','#141414'],note:'Warm, saturated everyday film. Grainier than the 200s, likes extra light.',
      c:1.08,sat:1.2,wb:[1.06,1.01,.9],hiT:[.02,.01,-.02],grain:.04,gsize:1.15}),
-  S({id:'c200',xu:[-0.005, 0.02, -0.02],xo:[0.02, 0.012, -0.025],type:'neg',maker:'Fujifilm',name:'200',iso:200,box:['#11a35f','#f4f4f2','#fff'],note:'Fuji’s current 200, made in the USA. Warm and bright, close to Kodak Gold.',
+  S({id:'c200',xu:[-0.005, 0.02, -0.02],xo:[0.02, 0.012, -0.025],type:'neg',maker:'Fujifilm',name:'200',iso:200,box:['#ededee','#43933a','#141414',0,'#b33589'],note:'Fuji’s current 200, made in the USA. Warm and bright, close to Kodak Gold.',
      c:1.03,sat:1.1,wb:[1.07,1.02,.9],chanC:[1,1.02,.96],hiT:[.024,.014,-.026],grain:.034,gsize:1.1}),
-  S({id:'fuji400',xu:[-0.005, 0.02, -0.02],xo:[0.02, 0.012, -0.025],type:'neg',maker:'Fujifilm',name:'400',iso:400,box:['#11a35f','#d9262b','#fff'],note:'Fuji’s current 400, made in the USA. Warm everyday color with visible grain, close to UltraMax.',
+  S({id:'fuji400',xu:[-0.005, 0.02, -0.02],xo:[0.02, 0.012, -0.025],type:'neg',maker:'Fujifilm',name:'400',iso:400,box:['#ededee','#4ba47d','#141414',0,'#5191ef'],note:'Fuji’s current 400, made in the USA. Warm everyday color with visible grain, close to UltraMax.',
      c:1.07,sat:1.15,wb:[1.05,1.01,.91],hiT:[.018,.01,-.018],grain:.042,gsize:1.15}),
   S({id:'proimage100',xu:[-0.01, 0.02, -0.01],xo:[0.015, 0.01, -0.02],type:'neg',maker:'Kodak',name:'Pro Image 100',iso:100,box:['#f2f2f2','#d9262b','#141414'],note:'Warm, fine grained everyday film made for portraits in sunny climates.',
      c:1.02,sat:1.06,wb:[1.05,1,.93],chanOff:[.03,0,-.02],hiT:[.016,.01,-.014],grain:.02,gsize:.9}),
-  S({id:'phoenix',xu:[-0.03, 0.01, 0.04],xo:[0.035, 0, -0.03],type:'neg',maker:'Harman',name:'Phoenix 125',iso:125,box:['#e8611a','#141414','#fff'],note:'The original Phoenix emulsion, rerated to 125. Punchy contrast, vivid color, heavy grain and red halation.',
+  S({id:'phoenix',xu:[-0.03, 0.01, 0.04],xo:[0.035, 0, -0.03],type:'neg',maker:'Harman',name:'Phoenix 125',iso:125,box:['#dadbdb','#c92924','#141414'],note:'The original Phoenix emulsion, rerated to 125. Punchy contrast, vivid color, heavy grain and red halation.',
      c:1.22,sat:1.18,wb:[1.08,.98,.88],chanC:[1.06,1,.96],chanOff:[.08,-.02,-.04],hiT:[.026,.008,-.02],shT:[-.006,-.004,.014],hal:.75,halC:[1,.26,.08],bloom:.06,grain:.072,gsize:1.4,gsharp:.45}),
-  S({id:'phoenix2',xu:[-0.02, 0.01, 0.03],xo:[0.025, 0, -0.02],type:'neg',maker:'Harman',name:'Phoenix II 200',iso:200,box:['#f0a23a','#141414','#fff'],note:'Harman’s second generation color film. Calmer than the original, with finer grain and more normal color.',
+  S({id:'phoenix2',xu:[-0.02, 0.01, 0.03],xo:[0.025, 0, -0.02],type:'neg',maker:'Harman',name:'Phoenix II 200',iso:200,box:['#78b5e6','#09174c','#09174c',0,'#fff'],note:'Harman’s second generation color film. Calmer than the original, with finer grain and more normal color.',
      c:1.08,sat:1.08,wb:[1.05,.99,.93],chanOff:[.05,-.01,-.02],hiT:[.018,.006,-.014],shT:[-.004,0,.01],hal:.3,halC:[1,.3,.1],grain:.045,gsize:1.2,gsharp:.3}),
-  S({id:'harmanred',type:'neg',maker:'Harman',name:'Red 125',iso:125,box:['#e2231a','#c81d16','#fff'],note:'Harman’s redscale film. Warm reds, oranges and yellows with a glow around highlights.',
+  S({id:'harmanred',type:'neg',maker:'Harman',name:'Red 125',iso:125,box:['#e3181d','#b5121a','#fff'],note:'Harman’s redscale film. Warm reds, oranges and yellows with a glow around highlights.',
      mat:[.8,.42,.12, .26,.32,.06, .06,.06,.03],wb:[1.08,.95,.82],c:1.05,sat:1.2,hal:.3,halC:[1,.35,.12],grain:.04,gsize:1.1}),
-  S({id:'azure',type:'neg',maker:'Harman',name:'Switch Azure 125',iso:125,box:['#1e8fd6','#f08a24','#fff'],note:'Color switching film. Blues turn orange, yellows turn azure and reds go purple, with heavy halation.',
+  S({id:'azure',type:'neg',maker:'Harman',name:'Switch Azure 125',iso:125,box:['#2ec4b6','#1b8f86','#fff'],note:'Color switching film. Blues turn orange, yellows turn azure and reds go purple, with heavy halation.',
      mat:[.15,0,1.15, 0,.55,.55, .75,.5,0],c:1.08,sat:1.4,hal:.6,halC:[1,.4,.2],bloom:.05,grain:.02,gsize:.85}),
-  S({id:'classicolor',xu:[-0.01, 0.02, 0.01],xo:[0.015, 0.008, -0.015],type:'neg',maker:'Lomography',name:'LomoChrome Classicolor 200',iso:200,box:['#2f6f9e','#e8c547','#fff'],note:'Quietly vibrant everyday color with natural tones and a classic analog feel.',
+  S({id:'classicolor',xu:[-0.01, 0.02, 0.01],xo:[0.015, 0.008, -0.015],type:'neg',maker:'Lomography',name:'LomoChrome Classicolor 200',iso:200,box:['#e76a3b','#141414','#fff',0,'#fff'],note:'Quietly vibrant everyday color with natural tones and a classic analog feel.',
      c:1,sat:1.06,wb:[1.03,1,.96],hiT:[.012,.008,-.01],shT:[-.004,.002,.008],hal:.08,grain:.03,gsize:1.05}),
-  S({id:'color92',xu:[-0.01, 0.02, -0.02],xo:[0.02, 0.012, -0.025],type:'neg',maker:'Lomography',name:'LomoChrome Color ’92',iso:400,box:['#e2a13a','#c43b2a','#fff'],note:'A nostalgic 90s snapshot look. Warm, slightly faded color with visible grain.',
+  S({id:'color92',xu:[-0.01, 0.02, -0.02],xo:[0.02, 0.012, -0.025],type:'neg',maker:'Lomography',name:'LomoChrome Color ’92',iso:400,box:['#1c2726','#caa76f','#caa76f'],note:'A nostalgic 90s snapshot look. Warm, slightly faded color with visible grain.',
      c:.98,sat:1.05,wb:[1.08,1.01,.9],hiT:[.022,.012,-.02],shT:[0,.006,.01],black:[.05,.05,.055],hal:.15,grain:.05,gsize:1.2,gsharp:.3}),
-  S({id:'color92sun',xu:[-0.01, 0.02, -0.03],xo:[0.025, 0.014, -0.03],type:'neg',maker:'Lomography',name:'LomoChrome Color ’92 Sun-kissed',iso:400,box:['#b9825a','#8a5a3c','#f3d9b8'],note:'A golden, sun warmed take on Color ’92. Honeyed skin tones and soft, nostalgic color.',
+  S({id:'color92sun',xu:[-0.01, 0.02, -0.03],xo:[0.025, 0.014, -0.03],type:'neg',maker:'Lomography',name:'LomoChrome Color ’92 Sun-kissed',iso:400,box:['#c98a60','#3a2418','#fff',0,'#d3966a'],note:'A golden, sun warmed take on Color ’92. Honeyed skin tones and soft, nostalgic color.',
      c:.97,sat:1.08,wb:[1.12,1.02,.84],hiT:[.03,.018,-.026],shT:[.006,.004,0],black:[.055,.05,.05],hal:.18,halC:[1,.45,.2],grain:.05,gsize:1.2,gsharp:.3}),
   S({id:'redscale',type:'neg',maker:'Lomography',name:'Redscale XR',iso:100,box:['#b3231f','#141414','#fff'],note:'Film loaded back to front, shot through the base. Everything glows red, orange and yellow.',
      mat:[.75,.45,.15, .18,.26,.05, .03,.04,.02],wb:[1.1,.92,.8],c:1.08,sat:1.25,black:[.03,.01,0],grain:.045,gsize:1.15}),
-  S({id:'cs800t',xu:[-0.03, 0.015, 0.03],xo:[0.02, 0, -0.01],type:'neg',maker:'CineStill',name:'800T',iso:800,box:['#d9262b','#f1f1f1','#fff'],note:'Tungsten balanced cine film. Red halation glow around lights, made for night.',
+  S({id:'cs800t',xu:[-0.03, 0.015, 0.03],xo:[0.02, 0, -0.01],type:'neg',maker:'CineStill',name:'800T',iso:800,box:['#e8101e','#f1f1f1','#fff'],note:'Tungsten balanced cine film. Red halation glow around lights, made for night.',
      c:1,sat:1.05,wb:[.82,.95,1.18],hal:.95,halC:[1,.22,.08],bloom:.07,grain:.045,gsize:1.2}),
-  S({id:'cs50d',type:'neg',maker:'CineStill',name:'50D',iso:50,box:['#2c63c2','#f1f1f1','#fff'],note:'Daylight cine stock with ultra fine grain. Clean, sharp and saturated.',
+  S({id:'cs50d',type:'neg',maker:'CineStill',name:'50D',iso:50,box:['#0378d8','#f1f1f1','#fff'],note:'Daylight cine stock with ultra fine grain. Clean, sharp and saturated.',
      c:1.05,sat:1.1,wb:[1,1,.98],hal:.25,grain:.014,gsize:.85}),
-  S({id:'cs400d',type:'neg',maker:'CineStill',name:'400D',iso:400,box:['#6c49b8','#f1f1f1','#fff'],note:'Daylight cine look. Vibrant, softer contrast, glowing highlights.',
+  S({id:'cs400d',type:'neg',maker:'CineStill',name:'400D',iso:400,box:['#765cd5','#f1f1f1','#fff'],note:'Daylight cine look. Vibrant, softer contrast, glowing highlights.',
      c:1.02,sat:1.1,wb:[1.04,1,.94],chanOff:[.04,0,-.02],hiT:[.014,.006,-.012],hal:.7,halC:[1,.28,.1],bloom:.05,grain:.034,gsize:1.1}),
-  S({id:'lomopurple',type:'neg',maker:'Lomography',name:'LomoChrome Purple',iso:400,box:['#7b2f9e','#e6c3f0','#fff'],note:'Color shift film. Greens turn purple, blues turn green, yellows turn pink.',
+  S({id:'lomopurple',type:'neg',maker:'Lomography',name:'LomoChrome Purple',iso:400,box:['#9a9c8a','#9a6f8e','#fff'],note:'Color shift film. Greens turn purple, blues turn green, yellows turn pink.',
      mat:[.85,.35,0, .1,.15,.7, 0,.65,.35],c:1.08,sat:1.15,grain:.045,gsize:1.15}),
-  S({id:'lomoturq',type:'neg',maker:'Lomography',name:'LomoChrome Turquoise',iso:400,box:['#13a3a3','#f2b31b','#fff'],note:'Color shift film. Blue skies turn gold, reds and yellows turn turquoise, skin goes blue.',
+  S({id:'lomoturq',type:'neg',maker:'Lomography',name:'LomoChrome Turquoise',iso:400,box:['#b8aca5','#2baead','#141414',0,'#e85a76'],note:'Color shift film. Blue skies turn gold, reds and yellows turn turquoise, skin goes blue.',
      mat:[.09,0,.91, .21,.38,.41, .67,.26,.07],wb:[.96,1.03,1],c:1.06,sat:1.1,grain:.045,gsize:1.15}),
-  S({id:'lomometro',type:'neg',maker:'Lomography',name:'LomoChrome Metropolis',iso:400,box:['#5d6066','#c9ccd1','#fff'],note:'Muted, desaturated color with strong contrast. A gritty, faded city look.',
+  S({id:'lomometro',type:'neg',maker:'Lomography',name:'LomoChrome Metropolis',iso:400,box:['#d0d1d4','#141414','#141414',0,'#cfd33d'],note:'Muted, desaturated color with strong contrast. A gritty, faded city look.',
      c:1.18,sat:.45,wb:[1.01,1,.97],shT:[-.006,.006,.01],hiT:[.012,.01,-.004],black:[.03,.035,.035],grain:.045,gsize:1.15}),
   S({id:'lomo100',type:'neg',maker:'Lomography',name:'Color Negative 100',iso:100,box:['#1e9ad6','#141414','#fff'],note:'Bright, saturated color with fine grain. Best on sunny days.',
      c:1.08,sat:1.22,wb:[1.04,1,.94],hiT:[.014,.008,-.012],grain:.022,gsize:.9}),
@@ -1271,84 +1271,84 @@ const STOCKS = [
   S({id:'lomo800',type:'neg',maker:'Lomography',name:'Color Negative 800',iso:800,box:['#2b2b2e','#e5007e','#fff'],note:'Saturated and warm with visible grain. A favorite for low light and night.',
      c:1.06,sat:1.18,wb:[1.07,1,.9],chanOff:[.05,0,-.03],hiT:[.02,.01,-.018],hal:.1,grain:.06,gsize:1.35,gsharp:.25}),
   // slide
-  S({id:'e100',xu:[-0.01, -0.005, 0.035],xo:[-0.005, 0, 0.01],type:'slide',maker:'Kodak',name:'Ektachrome E100',iso:100,box:['#141414','#e93e2b','#fff'],note:'Neutral to slightly cool, true to life slide film.',
+  S({id:'e100',xu:[-0.01, -0.005, 0.035],xo:[-0.005, 0, 0.01],type:'slide',maker:'Kodak',name:'Ektachrome E100',iso:100,box:['#fbb616','#0269e3','#141414'],note:'Neutral to slightly cool, true to life slide film.',
      c:1.15,sat:1.12,wb:[.97,1,1.04],grain:.011,gsize:.8}),
-  S({id:'velvia50',xu:[0.02, -0.025, 0.025],xo:[0.015, 0.01, -0.01],type:'slide',maker:'Fujifilm',name:'Velvia 50',iso:50,box:['#1b8f4b','#f4f4f2','#fff'],note:'Intense saturation and contrast with little room for error. A landscape classic.',
+  S({id:'velvia50',xu:[0.02, -0.025, 0.025],xo:[0.015, 0.01, -0.01],type:'slide',maker:'Fujifilm',name:'Velvia 50',iso:50,box:['#62a54a','#679edb','#fff'],note:'Intense saturation and contrast with little room for error. A landscape classic.',
      c:1.25,sat:1.4,wb:[1,.98,1],chanC:[1.04,1.1,1.05],shT:[.012,-.006,.016],grain:.007,gsize:.7}),
-  S({id:'provia100f',xu:[0, -0.01, 0.02],xo:[-0.005, 0, 0.01],type:'slide',maker:'Fujifilm',name:'Provia 100F',iso:100,box:['#2a9b5a','#f4f4f2','#fff'],note:'Balanced, natural slide film with the most forgiving latitude of the three.',
+  S({id:'provia100f',xu:[0, -0.01, 0.02],xo:[-0.005, 0, 0.01],type:'slide',maker:'Fujifilm',name:'Provia 100F',iso:100,box:['#4cad3f','#141414','#fff',0,'#114dd0'],note:'Balanced, natural slide film with the most forgiving latitude of the three.',
      c:1.18,sat:1.14,wb:[.99,1,1.01],grain:.009,gsize:.75}),
   // black and white
-  S({id:'trix400',type:'bw',maker:'Kodak',name:'Tri-X 400',iso:400,box:['#f9c21a','#141414','#141414'],note:'Punchy contrast and gritty grain. The street and photojournalism classic.',
+  S({id:'trix400',type:'bw',maker:'Kodak',name:'Tri-X 400',iso:400,box:['#02925e','#fbb616','#fff'],note:'Punchy contrast and gritty grain. The street and photojournalism classic.',
      c:1.2,sh:.82,bw:[.3,.56,.14],grain:.085,gsize:1.45,gsharp:.75}),
-  S({id:'hp5',type:'bw',maker:'Ilford',name:'HP5 Plus',iso:400,box:['#f4f4f2','#33a457','#141414','#141414'],note:'Lower contrast and forgiving, with good shadow detail. Pushes well.',
+  S({id:'hp5',type:'bw',maker:'Ilford',name:'HP5 Plus',iso:400,box:['#f5f6f6','#141414','#141414',0,'#03c354'],note:'Lower contrast and forgiving, with good shadow detail. Pushes well.',
      c:.9,toe:.88,bw:[.3,.55,.15],grain:.05,gsize:1.15,gsharp:.25}),
-  S({id:'tmax100',type:'bw',maker:'Kodak',name:'T-Max 100',iso:100,box:['#a7a8aa','#f6b320','#fff','#f6b320'],note:'Tabular grain. Extremely fine, sharp and smooth.',
+  S({id:'tmax100',type:'bw',maker:'Kodak',name:'T-Max 100',iso:100,box:['#a7a7aa','#fbb616','#fff','#fbb616'],note:'Tabular grain. Extremely fine, sharp and smooth.',
      c:1.1,bw:[.27,.58,.15],grain:.014,gsize:.75,gsharp:0}),
-  S({id:'tmax3200',type:'bw',maker:'Kodak',name:'T-Max P3200',iso:3200,box:['#f9c21a','#d42027','#141414'],note:'Very fast with heavy but pleasing grain and Tri-X like contrast.',
+  S({id:'tmax3200',type:'bw',maker:'Kodak',name:'T-Max P3200',iso:3200,box:['#54555a','#fbb616','#fff',0,'#e82e2f'],note:'Very fast with heavy but pleasing grain and Tri-X like contrast.',
      c:1.15,bw:[.33,.52,.15],grain:.11,gsize:1.7,gsharp:.6,black:[.06,.06,.06]}),
-  S({id:'delta3200',type:'bw',maker:'Ilford',name:'Delta 3200',iso:3200,box:['#f4f4f2','#9a86cf','#141414','#141414'],note:'Fast and forgiving with gritty grain. Handles overexposure well.',
+  S({id:'delta3200',type:'bw',maker:'Ilford',name:'Delta 3200',iso:3200,box:['#f3f3f4','#141414','#141414',0,'#9a5bb9'],note:'Fast and forgiving with gritty grain. Handles overexposure well.',
      c:1.04,bw:[.32,.53,.15],grain:.1,gsize:1.6,gsharp:.5,black:[.055,.055,.055]}),
-  S({id:'fp4',type:'bw',maker:'Ilford',name:'FP4 Plus',iso:125,box:['#f4f4f2','#2f7ac2','#141414','#141414'],note:'Classic medium speed film. Fine cubic grain and smooth tones.',
+  S({id:'fp4',type:'bw',maker:'Ilford',name:'FP4 Plus',iso:125,box:['#ebebeb','#141414','#141414',0,'#039bbb'],note:'Classic medium speed film. Fine cubic grain and smooth tones.',
      c:1.05,bw:[.28,.57,.15],grain:.026,gsize:.95,gsharp:.3}),
   S({id:'earlgrey',type:'bw',maker:'Lomography',name:'Earl Grey 100',iso:100,box:['#3c3c40','#e6e6e6','#fff'],note:'Fine grained black and white with deep blacks and strong contrast.',
      c:1.18,bw:[.28,.57,.15],grain:.022,gsize:.85,gsharp:.3}),
-  S({id:'berlinkino',type:'bw',maker:'Lomography',name:'Berlin Kino 400',iso:400,box:['#202022','#d9d9d9','#fff'],note:'Black and white cine film with a wide tonal range and soft, classic contrast.',
+  S({id:'berlinkino',type:'bw',maker:'Lomography',name:'Berlin Kino 400',iso:400,box:['#ecedec','#ff2d68','#30518e','#30518e'],note:'Black and white cine film with a wide tonal range and soft, classic contrast.',
      c:.95,bw:[.28,.57,.15],grain:.045,gsize:1.15,gsharp:.35}),
-  S({id:'potsdamkino',type:'bw',maker:'Lomography',name:'Potsdam Kino 100',iso:100,box:['#5a5a5e','#e6e6e6','#fff'],note:'Slow cine film with fine grain and smooth, delicate tones.',
+  S({id:'potsdamkino',type:'bw',maker:'Lomography',name:'Potsdam Kino 100',iso:100,box:['#f1f1ef','#375ba6','#17120b','#17120b'],note:'Slow cine film with fine grain and smooth, delicate tones.',
      c:1.05,bw:[.29,.56,.15],grain:.018,gsize:.8,gsharp:.15}),
-  S({id:'fantome',type:'bw',maker:'Lomography',name:'Fantôme Kino 8',iso:8,box:['#d4cfc6','#3a3a3c','#b07a3e'],note:'Ultra slow cine film with bold contrast, deep blacks and very fine grain. Wants bright light.',
+  S({id:'fantome',type:'bw',maker:'Lomography',name:'Fantôme Kino 8',iso:8,box:['#d1d2d2','#997453','#373637','#373637'],note:'Ultra slow cine film with bold contrast, deep blacks and very fine grain. Wants bright light.',
      c:1.32,sh:.92,bw:[.3,.56,.14],grain:.012,gsize:.7,gsharp:.2,black:[.015,.015,.015]}),
-  S({id:'babylon',type:'bw',maker:'Lomography',name:'Babylon Kino 13',iso:13,box:['#f3dede','#3a3a3c','#c47a4e'],note:'Very slow cine film with high contrast, fine grain and a nuanced, classic tonality.',
+  S({id:'babylon',type:'bw',maker:'Lomography',name:'Babylon Kino 13',iso:13,box:['#f3f3f3','#c4916c','#504a49','#504a49'],note:'Very slow cine film with high contrast, fine grain and a nuanced, classic tonality.',
      c:1.22,bw:[.29,.57,.14],grain:.014,gsize:.72,gsharp:.15,black:[.02,.02,.02]}),
-  S({id:'ortho25',type:'bw',maker:'Rollei',name:'Ortho 25 Plus',iso:25,box:['#141414', '#141414', '#f26a2e'],note:'Orthochromatic film that can’t see red. Reds go dark, skies go light, grain almost vanishes.',
+  S({id:'ortho25',type:'bw',maker:'Rollei',name:'Ortho 25 Plus',iso:25,box:['#1d1a1b','#1a181a','#ff7639',0,'#ff7639'],note:'Orthochromatic film that can’t see red. Reds go dark, skies go light, grain almost vanishes.',
      c:1.1,bw:[0,.68,.32],grain:.01,gsize:.7,gsharp:.15}),
-  S({id:'rpx25',type:'bw',maker:'Rollei',name:'RPX 25',iso:25,box:['#e8e8e8', '#f5d04a', '#141414'],note:'Very slow, very sharp film with almost invisible grain.',
+  S({id:'rpx25',type:'bw',maker:'Rollei',name:'RPX 25',iso:25,box:['#e3e3e3','#f8ce3e','#191416'],note:'Very slow, very sharp film with almost invisible grain.',
      c:1.12,bw:[.29,.56,.15],grain:.01,gsize:.7,gsharp:.15}),
-  S({id:'retro80s',type:'bw',maker:'Rollei',name:'Retro 80S',iso:80,box:['#c9cbcd', '#b5b8bb', '#2e9a6e'],note:'Extended red sensitivity gives darker skies and glowing foliage, with very fine grain.',
+  S({id:'retro80s',type:'bw',maker:'Rollei',name:'Retro 80S',iso:80,box:['#a9a8a8','#9e9e9e','#1c1919',0,'#289071'],note:'Extended red sensitivity gives darker skies and glowing foliage, with very fine grain.',
      c:1.15,bw:[.5,.42,.08],grain:.016,gsize:.75,gsharp:.2}),
-  S({id:'blackbird',type:'bw',maker:'Rollei',name:'Blackbird',iso:100,box:['#1e1e20', '#3a3a3c', '#fff'],note:'A creative film with bold contrast, deep blacks and bright, clean whites.',
+  S({id:'blackbird',type:'bw',maker:'Rollei',name:'Blackbird',iso:100,box:['#232325','#303637','#eeeeee'],note:'A creative film with bold contrast, deep blacks and bright, clean whites.',
      c:1.3,bw:[.35,.52,.13],grain:.03,gsize:1,gsharp:.4,black:[0,0,0]}),
-  S({id:'rpx100',type:'bw',maker:'Rollei',name:'RPX 100',iso:100,box:['#e8e8e8', '#9ad43c', '#141414'],note:'Dependable everyday black and white with fine grain and good sharpness.',
+  S({id:'rpx100',type:'bw',maker:'Rollei',name:'RPX 100',iso:100,box:['#e5e5e5','#9cd338','#161316'],note:'Dependable everyday black and white with fine grain and good sharpness.',
      c:1.05,bw:[.29,.56,.15],grain:.028,gsize:.95,gsharp:.3}),
-  S({id:'superpan200',type:'bw',maker:'Rollei',name:'Superpan 200',iso:200,box:['#c9cbcd', '#b5b8bb', '#3b2a7a'],note:'Super panchromatic film reaching into deep red. Rich tones and fine grain.',
+  S({id:'superpan200',type:'bw',maker:'Rollei',name:'Superpan 200',iso:200,box:['#aeaeaf','#aeaead','#2b292c',0,'#32165a'],note:'Super panchromatic film reaching into deep red. Rich tones and fine grain.',
      c:1.1,bw:[.45,.45,.1],grain:.03,gsize:.95,gsharp:.25}),
-  S({id:'infrared',type:'bw',maker:'Rollei',name:'Infrared 400',iso:400,box:['#22246a', '#e6267a', '#fff'],note:'Near infrared film. Shot through an IR filter, foliage glows white and skies turn black.',
+  S({id:'infrared',type:'bw',maker:'Rollei',name:'Infrared 400',iso:400,box:['#18214f','#e82469','#eeece7'],note:'Near infrared film. Shot through an IR filter, foliage glows white and skies turn black.',
      c:1.22,bw:[.5,.62,-.12],grain:.04,gsize:1.05,gsharp:.3,bloom:.06}),
-  S({id:'retro400s',type:'bw',maker:'Rollei',name:'Retro 400S',iso:400,box:['#c9cbcd', '#b5b8bb', '#e1283c'],note:'Extended red sensitivity in a 400. Darker skies with fine grain for its speed.',
+  S({id:'retro400s',type:'bw',maker:'Rollei',name:'Retro 400S',iso:400,box:['#9c9d9c','#999999','#141414',0,'#f41c31'],note:'Extended red sensitivity in a 400. Darker skies with fine grain for its speed.',
      c:1.12,bw:[.48,.43,.09],grain:.04,gsize:1.1,gsharp:.3}),
-  S({id:'rpx400',type:'bw',maker:'Rollei',name:'RPX 400',iso:400,box:['#e8e8e8', '#d9262b', '#141414'],note:'Versatile everyday 400 with classic tones and moderate grain.',
+  S({id:'rpx400',type:'bw',maker:'Rollei',name:'RPX 400',iso:400,box:['#e3e3e3','#da2422','#191617'],note:'Versatile everyday 400 with classic tones and moderate grain.',
      c:1.05,bw:[.29,.56,.15],grain:.048,gsize:1.15,gsharp:.3}),
   S({id:'ladygrey',type:'bw',maker:'Lomography',name:'Lady Grey 400',iso:400,box:['#8c8c90','#141414','#fff'],note:'Everyday black and white with classic contrast and moderate grain.',
      c:1.08,bw:[.29,.57,.14],grain:.05,gsize:1.2,gsharp:.4}),
-  S({id:'panf50',type:'bw',maker:'Ilford',name:'Pan F Plus',iso:50,box:['#f4f4f2','#e0a83a','#141414','#141414'],note:'Slow, very fine grained and punchy. Wants lots of light.',
+  S({id:'panf50',type:'bw',maker:'Ilford',name:'Pan F Plus',iso:50,box:['#f5f6f6','#141414','#141414',0,'#fabc55'],note:'Slow, very fine grained and punchy. Wants lots of light.',
      c:1.25,bw:[.28,.57,.15],grain:.009,gsize:.7}),
-  S({id:'ortho80',type:'bw',maker:'Ilford',name:'Ortho Plus 80',iso:80,box:['#f4f4f2','#2bb3c4','#141414','#141414'],note:'Blind to red. Reds go dark and blue skies turn bright.',
+  S({id:'ortho80',type:'bw',maker:'Ilford',name:'Ortho Plus 80',iso:80,box:['#f5f6f6','#141414','#141414',0,'#d9344a'],note:'Blind to red. Reds go dark and blue skies turn bright.',
      c:1.2,bw:[0,.42,.58],grain:.02,gsize:.85}),
-  S({id:'tmax400',type:'bw',maker:'Kodak',name:'T-Max 400',iso:400,box:['#f9c21a','#4b4f55','#141414'],note:'Sharp, fine grained 400 with tabular grain. Clean and modern.',
+  S({id:'tmax400',type:'bw',maker:'Kodak',name:'T-Max 400',iso:400,box:['#656467','#fbb616','#fff','#fbb616'],note:'Sharp, fine grained 400 with tabular grain. Clean and modern.',
      c:1.12,bw:[.27,.58,.15],grain:.032,gsize:1.05,gsharp:.1}),
-  S({id:'delta100',type:'bw',maker:'Ilford',name:'Delta 100',iso:100,box:['#f4f4f2','#3a7fc4','#141414','#141414'],note:'Ilford’s finest grain film. Very sharp with smooth, rich tones.',
+  S({id:'delta100',type:'bw',maker:'Ilford',name:'Delta 100',iso:100,box:['#f5f6f6','#141414','#141414',0,'#54afc9'],note:'Ilford’s finest grain film. Very sharp with smooth, rich tones.',
      c:1.08,bw:[.28,.57,.15],grain:.013,gsize:.75,gsharp:.05}),
-  S({id:'delta400',type:'bw',maker:'Ilford',name:'Delta 400',iso:400,box:['#f4f4f2','#e0a83a','#141414','#141414'],note:'Fine grain for a 400. Crisper and cleaner than HP5.',
+  S({id:'delta400',type:'bw',maker:'Ilford',name:'Delta 400',iso:400,box:['#f5f6f6','#141414','#141414',0,'#4fbc74'],note:'Fine grain for a 400. Crisper and cleaner than HP5.',
      c:1.05,bw:[.29,.56,.15],grain:.034,gsize:1.05,gsharp:.15}),
-  S({id:'xp2',type:'bw',maker:'Ilford',name:'XP2 Super',iso:400,box:['#f4f4f2','#d9262b','#141414','#141414'],note:'Black and white developed in color chemistry. Creamy, near grainless and very forgiving.',
+  S({id:'xp2',type:'bw',maker:'Ilford',name:'XP2 Super',iso:400,box:['#f3f3f4','#141414','#141414',0,'#ff524d'],note:'Black and white developed in color chemistry. Creamy, near grainless and very forgiving.',
      c:.9,toe:.9,sh:.8,bw:[.28,.55,.17],grain:.018,gsize:.95,gsharp:0,black:[.045,.045,.045]}),
-  S({id:'kentmere100',type:'bw',maker:'Kentmere',name:'Pan 100',iso:100,box:['#f2f2ef','#2a6fb5','#141414'],note:'Affordable slow film with good contrast and fine grain. A solid daylight all rounder.',
+  S({id:'kentmere100',type:'bw',maker:'Kentmere',name:'Pan 100',iso:100,box:['#80b4e2','#fbf7f1','#141414'],note:'Affordable slow film with good contrast and fine grain. A solid daylight all rounder.',
      c:1.08,bw:[.29,.56,.15],grain:.028,gsize:.95,gsharp:.3}),
-  S({id:'kentmere200',type:'bw',maker:'Kentmere',name:'Pan 200',iso:200,box:['#f2f2ef','#3c9a4a','#141414'],note:'Harman’s newest budget film. Contrasty with well controlled grain.',
+  S({id:'kentmere200',type:'bw',maker:'Kentmere',name:'Pan 200',iso:200,box:['#7991b9','#f9f0ef','#fff',0,'#3a71d4'],note:'Harman’s newest budget film. Contrasty with well controlled grain.',
      c:1.15,bw:[.29,.56,.15],grain:.04,gsize:1.1,gsharp:.4}),
-  S({id:'kentmere400',type:'bw',maker:'Kentmere',name:'Pan 400',iso:400,box:['#f2f2ef','#d9262b','#141414'],note:'Affordable 400 with softer contrast and visible grain. A student favorite.',
+  S({id:'kentmere400',type:'bw',maker:'Kentmere',name:'Pan 400',iso:400,box:['#b05a97','#f6fdf7','#fff',0,'#6e639c'],note:'Affordable 400 with softer contrast and visible grain. A student favorite.',
      c:.92,bw:[.29,.56,.15],grain:.055,gsize:1.25,gsharp:.35,black:[.045,.045,.045]}),
-  S({id:'fomapan200',type:'bw',maker:'Foma',name:'Fomapan 200',iso:200,box:['#f2f2ef','#2a8a3a','#2a8a3a'],note:'Foma’s middle speed film. Classic tones with a little more grain than 100.',
+  S({id:'fomapan200',type:'bw',maker:'Foma',name:'Fomapan 200',iso:200,box:['#1e4891','#f9f7f1','#ef762e'],note:'Foma’s middle speed film. Classic tones with a little more grain than 100.',
      c:1.08,bw:[.3,.55,.15],grain:.035,gsize:1.05,gsharp:.35}),
-  S({id:'acros100',type:'bw',maker:'Fujifilm',name:'Acros 100 II',iso:100,box:['#1e1e1e','#11a35f','#fff'],note:'Fuji’s black and white film. Ultra fine grain, smooth tones and excellent long exposures.',
+  S({id:'acros100',type:'bw',maker:'Fujifilm',name:'Acros 100 II',iso:100,box:['#00a236','#141514','#fff'],note:'Fuji’s black and white film. Ultra fine grain, smooth tones and excellent long exposures.',
      c:1.06,bw:[.28,.58,.14],grain:.012,gsize:.72,gsharp:.05}),
-  S({id:'chs100',type:'bw',maker:'Adox',name:'CHS 100 II',iso:100,box:['#f2efe6','#1f5c8a','#141414'],note:'A classic old style emulsion with high sharpness, rich tones and gentle grain.',
+  S({id:'chs100',type:'bw',maker:'Adox',name:'CHS 100 II',iso:100,box:['#e4872b','#4b4645','#fff'],note:'A classic old style emulsion with high sharpness, rich tones and gentle grain.',
      c:1.1,toe:1.04,bw:[.25,.58,.17],grain:.03,gsize:.95,gsharp:.35}),
-  S({id:'apx100',type:'bw',maker:'AgfaPhoto',name:'APX 100',iso:100,box:['#f2f2f2','#1d3f8f','#141414'],note:'Affordable everyday black and white with crisp contrast and fine grain.',
+  S({id:'apx100',type:'bw',maker:'AgfaPhoto',name:'APX 100',iso:100,box:['#eff0f2','#8b877a','#141414',0,'#bc3148'],note:'Affordable everyday black and white with crisp contrast and fine grain.',
      c:1.05,bw:[.29,.56,.15],grain:.03,gsize:.95,gsharp:.3}),
-  S({id:'apx400',type:'bw',maker:'AgfaPhoto',name:'APX 400',iso:400,box:['#f2f2f2','#c8102e','#141414'],note:'Soft, lo-fi black and white with muted contrast and a dreamy, grainy look.',
+  S({id:'apx400',type:'bw',maker:'AgfaPhoto',name:'APX 400',iso:400,box:['#e9eaee','#2a160d','#141414',0,'#8a7867'],note:'Soft, lo-fi black and white with muted contrast and a dreamy, grainy look.',
      c:.88,toe:.92,sh:.84,bw:[.29,.56,.15],grain:.05,gsize:1.2,gsharp:.2,black:[.05,.05,.05]}),
-  S({id:'fomapan100',type:'bw',maker:'Foma',name:'Fomapan 100',iso:100,box:['#f2f2ef','#1a5fa8','#1a5fa8'],note:'Affordable Czech film with a traditional, old school look.',
+  S({id:'fomapan100',type:'bw',maker:'Foma',name:'Fomapan 100',iso:100,box:['#134e93','#f8f7f3','#ffea01'],note:'Affordable Czech film with a traditional, old school look.',
      c:1.15,bw:[.3,.55,.15],grain:.04,gsize:1.05,gsharp:.4}),
 ];
 // within each group: by maker (mainstream first), then film speed
@@ -1446,6 +1446,8 @@ const LENSES = [
   {id:'35-2',  name:'35mm ƒ/2',   type:'AI-S',f:35, clicks:[2,2.8,4,5.6,8,11,16,22], printed:[2,2.8,4,5.6,8,11,16,22], minM:0.3, years:'1981 to 2005', serial:'210001 to 333418', d:63, len:52, seg:{hood:0,front:9,focus:14,dist:11,dof:3,ap:9,mount:6}},
   {id:'28-28', name:'28mm ƒ/2.8', type:'AI-S',f:28, clicks:[2.8,4,5.6,8,11,16,22], printed:[2.8,4,5.6,8,11,16,22], minM:0.2, years:'1981 to 2005', serial:'635001 to 837751', d:63, len:46, seg:{hood:0,front:7,focus:13,dist:10,dof:3,ap:8,mount:5}},
   {id:'85-2',  name:'85mm ƒ/2',   type:'AI-S',f:85, clicks:[2,2.8,4,5.6,8,11,16,22], printed:[2,2.8,4,5.6,8,11,16,22], minM:0.85, years:'1981 to 1995', serial:'270001 to 358019', d:64, len:58, seg:{hood:0,front:10,focus:18,dist:11,dof:3,ap:10,mount:6}},
+  {id:'50-18p',name:'50mm ƒ/1.8 Pancake',type:'AI-S',f:50, clicks:[1.8,2,2.8,4,5.6,8,11,16,22], printed:[1.8,2.8,4,5.6,8,11,16,22], minM:0.45, years:'1980 to 1982, Japan', serialNote:'starts with #2', d:63, len:27, seg:{hood:0,front:2,focus:8,dist:6,dof:1,ap:6,mount:4}},
+  {id:'105-18',name:'105mm ƒ/1.8',type:'AI-S',f:105,clicks:[1.8,2,2.8,4,5.6,8,11,16,22], printed:[1.8,2.8,4,5.6,8,11,16,22], minM:1.0, years:'1981 to 1993', d:80, len:78, seg:{hood:18,front:6,focus:24,dist:12,dof:3,ap:10,mount:5}},
   {id:'105-25',name:'105mm ƒ/2.5',type:'AI-S',f:105,clicks:[2.5,2.8,4,5.6,8,11,16,22], printed:[2.5,4,5.6,8,11,16,22], minM:1.0, years:'1981 to 2005', serial:'890001 to 1053938', d:64, len:78, seg:{hood:20,front:6,focus:20,dist:13,dof:3,ap:10,mount:6}},
 ];
 // widest to longest, fastest first when two lenses share a focal length
@@ -1493,8 +1495,10 @@ function toast(msg, ms=2600){ const t=$('toast'); t.textContent=msg; t.classList
 function haptic(ms=6){ try{ navigator.vibrate && navigator.vibrate(ms); }catch(e){} }
 function fmtT(t){ if(t>=0.95) return (Math.round(t*10)/10).toString().replace(/\.0$/,'')+'"'; return '1/'+Math.round(1/t); }
 function boxStyle(el,s){ const b=s.box; el.style.background=b[0]; el.style.setProperty('--b2',b[1]); el.style.setProperty('--b3',b[2]);
-  el.style.setProperty('--b4',b[3]||'transparent'); el.style.setProperty('--tb', b[3]?'7px':'0px');
-  el.dataset.iso=s.iso; if(!el.querySelector('i')) el.appendChild(document.createElement('i')); }
+  el.style.setProperty('--b4',b[3]||'transparent'); el.style.setProperty('--tb', b[3]?'18%':'0px');
+  el.style.setProperty('--b5',b[4]||'transparent'); el.style.setProperty('--ab', b[4]?'22%':'0px');
+  el.dataset.iso=s.iso; if(!el.querySelector('i')) el.appendChild(document.createElement('i'));
+  if(!el.querySelector('u')) el.appendChild(document.createElement('u')); }
 
 /* ========================================================= WebGL */
 const canvas = $('gl');
@@ -2115,8 +2119,10 @@ function setLens(L){
   let k = APERTURES.findIndex(a=>a>=N-0.01); st.ap = k<0 ? APERTURES.length-1 : k;
   buildApDial(); buildADR(); buildLenses(); buildFocusDials(); syncUI(); wake(); haptic(4);
 }
+const snTxt = L => L.serial ? '#'+L.serial.replace(' to ',' to #') : (L.serialNote||'');
 const LENS_NOTE = {'50-18':'Compact everyday normal lens.','50-14':'Faster normal lens for low light.','35-2':'Moderate wide for street and travel.',
-  '28-28':'Wide for interiors and landscapes.','85-2':'Classic portrait length.','105-25':'Longer portrait lens, strong background blur.'};
+  '28-28':'Wide for interiors and landscapes.','85-2':'Classic portrait length.','105-25':'Longer portrait lens, strong background blur.',
+  '50-18p':'Japan market pancake. Tiny, all metal, and focuses closer than the export version.','105-18':'The fastest 105 of its day. Big, heavy and dreamy wide open.'};
 function lensDrawing(L){
   // front-up elevation like a product shot: front lip, rubber focus grip, distance scale,
   // chrome depth-of-field band, aperture ring with the meter-coupling prong, chrome mount
@@ -2139,7 +2145,7 @@ function lensDrawing(L){
   return `<svg class="lensart" viewBox="0 0 ${(W+6).toFixed(0)} ${(y+2).toFixed(0)}" width="${(W+6).toFixed(0)}" height="${(y+2).toFixed(0)}" fill="none" stroke="currentColor" stroke-width=".9">${g}</svg>`;
 }
 function buildLensSheet(){
-  $('lensList').innerHTML = LENSES.map(L=>`<div class="lensitem"><button class="lensrow${L===st.lens?' on':''}" data-l="${L.id}" aria-pressed="${L===st.lens}"><div class="lensart-w">${lensDrawing(L)}</div><div class="lt"><b>Nikkor ${L.name} <em>${L.type}</em></b><span>${fN(L.clicks[0])} → ${fN(L.clicks[L.clicks.length-1])} · ${L.minM} m → ∞</span><span>Made ${L.years} · SN #${L.serial.replace(' to ',' to #')}</span></div></button><button class="infobtn" data-li="${L.id}" aria-label="About the ${L.name} lens"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 10.8v6"/><circle cx="12" cy="7.4" r="1.1" fill="currentColor" stroke="none"/></svg></button></div>`).join('')
+  $('lensList').innerHTML = LENSES.map(L=>`<div class="lensitem"><button class="lensrow${L===st.lens?' on':''}" data-l="${L.id}" aria-pressed="${L===st.lens}"><div class="lensart-w">${lensDrawing(L)}</div><div class="lt"><b>Nikkor ${L.name} <em>${L.type}</em></b><span>${fN(L.clicks[0])} → ${fN(L.clicks[L.clicks.length-1])} · ${L.minM} m → ∞</span><span>Made ${L.years}${snTxt(L)?' · SN '+snTxt(L):''}</span></div></button><button class="infobtn" data-li="${L.id}" aria-label="About the ${L.name} lens"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 10.8v6"/><circle cx="12" cy="7.4" r="1.1" fill="currentColor" stroke="none"/></svg></button></div>`).join('')
 ;
   $('lensList').querySelectorAll('.lensrow').forEach(b=>b.onclick=()=>{ setLens(LENSES.find(L=>L.id===b.dataset.l)); closeSheets(); });
   $('lensList').querySelectorAll('[data-li]').forEach(b=>b.onclick=()=>showLensInfo(LENSES.find(L=>L.id===b.dataset.li), true));
@@ -2464,7 +2470,7 @@ function showLensInfo(L, fromSheet){
   const rows = [
     ['Focal length', `${L.f}mm`], ['Angle of view', `${aov(43.27)}° diagonal · ${aov(36)}° horizontal`],
     ['Aperture', `${fN(L.clicks[0])} to ${fN(L.clicks[L.clicks.length-1])}`], ['Closest focus', `${L.minM} m`],
-    ['Mount', MOUNT_NOTE[L.type]], ['Made', L.years], ['Serial numbers', '#'+L.serial.replace(' to ',' to #')]
+    ['Mount', MOUNT_NOTE[L.type]], ['Made', L.years], ...(snTxt(L)?[['Serial numbers', snTxt(L).replace(/^s/,'S')]]:[])
   ].map(([k,v])=>`<div class="irow"><dt>${k}</dt><dd>${v}</dd></div>`).join('');
   openInfo('Lens', `<div class="ihead"><div class="iart">${lensDrawing(L)}</div><div class="ittl"><small>Nikkor ${L.type}</small><b>${L.name}</b><span>${LENS_NOTE[L.id]||''}</span></div></div>
     <dl class="ispec">${rows}</dl>`,
